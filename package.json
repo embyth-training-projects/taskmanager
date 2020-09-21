@@ -1,0 +1,26 @@
+{
+  "name": "taskmanager",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Manage your daily routine tasks easily with Taskmanager Service",
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:embyth/taskmanager.git"
+  },
+  "bugs": {
+    "url": "https://github.com/embyth/taskmanager/issues"
+  },
+  "scripts": {
+    "eslint": "eslint src/**/*.js",
+    "test": "npm run eslint"
+  },
+  "devDependencies": {
+    "eslint": "7.3.1",
+    "eslint-config-htmlacademy": "0.5.2"
+  },
+  "license": "MIT",
+  "dependencies": {},
+  "engines": {
+    "node": "12"
+  }
+}
