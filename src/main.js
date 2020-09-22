@@ -1,5 +1,6 @@
 'use strict';
 
+// Функция создания шаблона меню сайта
 const createSiteMenuTemplate = function () {
   return (
     `<section class="control__btn-wrap">
@@ -33,6 +34,7 @@ const createSiteMenuTemplate = function () {
   );
 };
 
+// Функция создания шаблона фильтров
 const createFilterTemplate = function () {
   return (
     `<section class="main__filter filter container">
@@ -97,6 +99,7 @@ const createFilterTemplate = function () {
   );
 };
 
+// Функция создания шаблона контейнера с фильтрами
 const createBoardTemplate = function () {
   return (
     `<section class="board container">
@@ -111,6 +114,7 @@ const createBoardTemplate = function () {
   );
 };
 
+// Функция создания шаблона редактирования карточки задания
 const createEditTaskTemplate = function () {
   return (
     `<article class="card card--edit card--yellow card--repeat">
@@ -313,6 +317,7 @@ const createEditTaskTemplate = function () {
   );
 };
 
+// Функция создания шаблона карточки задания
 const createTaskCardTemplate = function () {
   return (
     `<article class="card card--black">
@@ -360,8 +365,14 @@ const createTaskCardTemplate = function () {
   );
 };
 
+// Функция создания шаблона кнопки "Load More"
 const createLoadMoreButtonTemplate = () => {
   return (
     `<button class="load-more" type="button">load more</button>`
   );
+};
+
+// Функция отрисовки элемента в контейнер
+const renderComponent = (container, element, place = `beforeend`) => {
+  container.insertAdjacentHTML(place, element);
 };
