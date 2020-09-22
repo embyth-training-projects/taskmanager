@@ -1,7 +1,10 @@
 'use strict';
 
+// Константа количества карточек заданий
+const TASK_AMOUNT = 3;
+
 // Функция создания шаблона меню сайта
-const createSiteMenuTemplate = function () {
+const createSiteMenuTemplate = () => {
   return (
     `<section class="control__btn-wrap">
       <input
@@ -35,7 +38,7 @@ const createSiteMenuTemplate = function () {
 };
 
 // Функция создания шаблона фильтров
-const createFilterTemplate = function () {
+const createFilterTemplate = () => {
   return (
     `<section class="main__filter filter container">
       <input
@@ -100,7 +103,7 @@ const createFilterTemplate = function () {
 };
 
 // Функция создания шаблона контейнера с фильтрами
-const createBoardTemplate = function () {
+const createBoardTemplate = () => {
   return (
     `<section class="board container">
       <div class="board__filter-list">
@@ -115,7 +118,7 @@ const createBoardTemplate = function () {
 };
 
 // Функция создания шаблона редактирования карточки задания
-const createEditTaskTemplate = function () {
+const createEditTaskTemplate = () => {
   return (
     `<article class="card card--edit card--yellow card--repeat">
       <form class="card__form" method="get">
@@ -318,7 +321,7 @@ const createEditTaskTemplate = function () {
 };
 
 // Функция создания шаблона карточки задания
-const createTaskCardTemplate = function () {
+const createTaskCardTemplate = () => {
   return (
     `<article class="card card--black">
       <div class="card__form">
@@ -376,3 +379,22 @@ const createLoadMoreButtonTemplate = () => {
 const renderComponent = (container, element, place = `beforeend`) => {
   container.insertAdjacentHTML(place, element);
 };
+
+// Отрисовываем шаблоны на страницу
+const siteMainNode = document.querySelector(`.main`);
+const siteHeaderNode = siteMainNode.querySelector(`.main__control`);
+
+renderComponent(siteHeaderNode, createSiteMenuTemplate());
+renderComponent(siteMainNode, createFilterTemplate());
+renderComponent(siteMainNode, createBoardTemplate());
+
+const boardNode = siteMainNode.querySelector(`.board`);
+const taskListNode = boardNode.querySelector(`.board__tasks`);
+
+renderComponent(taskListNode, createEditTaskTemplate());
+
+for (let i = 0; i < TASK_AMOUNT; i++) {
+  renderComponent(taskListNode, createTaskCardTemplate());
+}
+
+renderComponent(boardNode, createLoadMoreButtonTemplate());
