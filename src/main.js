@@ -4,9 +4,12 @@ import {createBoardTemplate} from './view/board';
 import {createEditTaskTemplate} from './view/task-edit';
 import {createTaskCardTemplate} from './view/task';
 import {createLoadMoreButtonTemplate} from './view/load-more-button';
+import {generateTask} from './mock/task';
 
 // Константа количества карточек заданий
 const TASK_AMOUNT = 3;
+
+const tasks = new Array(TASK_AMOUNT).fill().map(generateTask);
 
 // Функция отрисовки элемента в контейнер
 const renderComponent = (container, element, place = `beforeend`) => {
@@ -27,7 +30,7 @@ const taskListNode = boardNode.querySelector(`.board__tasks`);
 renderComponent(taskListNode, createEditTaskTemplate());
 
 for (let i = 0; i < TASK_AMOUNT; i++) {
-  renderComponent(taskListNode, createTaskCardTemplate());
+  renderComponent(taskListNode, createTaskCardTemplate(tasks[i]));
 }
 
 renderComponent(boardNode, createLoadMoreButtonTemplate());
