@@ -5,11 +5,13 @@ import {createEditTaskTemplate} from './view/task-edit';
 import {createTaskCardTemplate} from './view/task';
 import {createLoadMoreButtonTemplate} from './view/load-more-button';
 import {generateTask} from './mock/task';
+import {generateFilter} from './mock/filter';
 
 // Константа количества карточек заданий
 const TASK_AMOUNT = 4;
 
 const tasks = new Array(TASK_AMOUNT).fill().map(generateTask);
+const filters = generateFilter(tasks);
 
 // Функция отрисовки элемента в контейнер
 const renderComponent = (container, element, place = `beforeend`) => {
@@ -21,7 +23,7 @@ const siteMainNode = document.querySelector(`.main`);
 const siteHeaderNode = siteMainNode.querySelector(`.main__control`);
 
 renderComponent(siteHeaderNode, createSiteMenuTemplate());
-renderComponent(siteMainNode, createFilterTemplate());
+renderComponent(siteMainNode, createFilterTemplate(filters));
 renderComponent(siteMainNode, createBoardTemplate());
 
 const boardNode = siteMainNode.querySelector(`.board`);
