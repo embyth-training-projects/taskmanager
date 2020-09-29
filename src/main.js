@@ -7,7 +7,7 @@ import {createLoadMoreButtonTemplate} from './view/load-more-button';
 import {generateTask} from './mock/task';
 
 // Константа количества карточек заданий
-const TASK_AMOUNT = 3;
+const TASK_AMOUNT = 4;
 
 const tasks = new Array(TASK_AMOUNT).fill().map(generateTask);
 
@@ -27,9 +27,9 @@ renderComponent(siteMainNode, createBoardTemplate());
 const boardNode = siteMainNode.querySelector(`.board`);
 const taskListNode = boardNode.querySelector(`.board__tasks`);
 
-renderComponent(taskListNode, createEditTaskTemplate());
+renderComponent(taskListNode, createEditTaskTemplate(tasks[0]));
 
-for (let i = 0; i < TASK_AMOUNT; i++) {
+for (let i = 1; i < TASK_AMOUNT; i++) {
   renderComponent(taskListNode, createTaskCardTemplate(tasks[i]));
 }
 
