@@ -50,6 +50,14 @@ const generateRepeatingDays = () => {
   };
 };
 
+// Функция-генератор случайного цвета
+const getRandomColor = () => {
+  const colors = [`black`, `yellow`, `blue`, `green`, `pink`];
+  const randomIndex = getRandomInteger(0, colors.length - 1);
+
+  return colors[randomIndex];
+};
+
 // Функция-генератор карточки задания
 export const generateTask = () => {
   const dueDate = generateDate();
@@ -69,7 +77,7 @@ export const generateTask = () => {
     description: generateDescription(),
     dueDate,
     repeating,
-    color: `black`,
+    color: getRandomColor(),
     isArchive: false,
     isFavorite: false,
   };
