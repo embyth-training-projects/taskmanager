@@ -19,11 +19,29 @@ const generateDescription = () => {
   return descriptions[randomIndex];
 };
 
+// Функция для генерации даты. По заданию это либо null, либо дата плюс-минус неделя от текущей
+const generateDate = () => {
+  const isDate = Boolean(getRandomInteger(0, 1));
+
+  if (!isDate) {
+    return null;
+  }
+
+  const maxDaysGap = 7;
+  const daysGap = getRandomInteger(-maxDaysGap, maxDaysGap);
+  const currentDate = new Date();
+
+  currentDate.setHours(23, 59, 59, 999);
+  currentDate.setDate(currentDate.getDate() + daysGap);
+
+  return new Date(currentDate);
+};
+
 // Функция-генератор карточки задания
 export const generateTask = () => {
   return {
     description: generateDescription(),
-    dueDate: null,
+    dueDate: generateDate(),
     repeating: {
       mo: false,
       tu: false,
