@@ -1,7 +1,13 @@
 // Функция создания шаблона карточки задания
-export const createTaskCardTemplate = () => {
+export const createTaskCardTemplate = (task) => {
+  const {color, description, dueDate} = task;
+
+  const date = dueDate !== null
+    ? dueDate.toLocaleString(`en-US`, {day: `numeric`, month: `long`})
+    : ``;
+
   return (
-    `<article class="card card--black">
+    `<article class="card card--${color}">
       <div class="card__form">
         <div class="card__inner">
           <div class="card__control">
@@ -26,7 +32,7 @@ export const createTaskCardTemplate = () => {
           </div>
 
           <div class="card__textarea-wrap">
-            <p class="card__text">Example task with default color.</p>
+            <p class="card__text">${description}</p>
           </div>
 
           <div class="card__settings">
@@ -34,7 +40,7 @@ export const createTaskCardTemplate = () => {
               <div class="card__dates">
                 <div class="card__date-deadline">
                   <p class="card__input-deadline-wrap">
-                    <span class="card__date">23 September</span>
+                    <span class="card__date">${date}</span>
                   </p>
                 </div>
               </div>
