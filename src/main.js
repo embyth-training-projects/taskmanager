@@ -8,7 +8,8 @@ import {generateTask} from './mock/task';
 import {generateFilter} from './mock/filter';
 
 // Константа количества карточек заданий
-const TASK_AMOUNT = 4;
+const TASK_AMOUNT = 22;
+const TASK_AMOUNT_PER_STEP = 8;
 
 const tasks = new Array(TASK_AMOUNT).fill().map(generateTask);
 const filters = generateFilter(tasks);
@@ -31,8 +32,28 @@ const taskListNode = boardNode.querySelector(`.board__tasks`);
 
 renderComponent(taskListNode, createEditTaskTemplate(tasks[0]));
 
-for (let i = 1; i < TASK_AMOUNT; i++) {
-  renderComponent(taskListNode, createTaskCardTemplate(tasks[i]));
-}
+tasks
+  .slice(1, Math.min(tasks.length, TASK_AMOUNT_PER_STEP))
+  .forEach((task) => renderComponent(taskListNode, createTaskCardTemplate(task)));
 
-renderComponent(boardNode, createLoadMoreButtonTemplate());
+if (tasks.length > TASK_AMOUNT_PER_STEP) {
+  let renderedTasksCount = TASK_AMOUNT_PER_STEP;
+
+  renderComponent(boardNode, createLoadMoreButtonTemplate());
+
+  const loadMoreButton = boardNode.querySelector(`.load-more`);
+
+  loadMoreButton.addEventListener(`click`, (evt) => {
+    evt.preventDefault();
+
+    tasks
+      .slice(renderedTasksCount, renderedTasksCount + TASK_AMOUNT_PER_STEP)
+      .forEach((task) => renderComponent(taskListNode, createTaskCardTemplate(task)));
+
+    renderedTasksCount += TASK_AMOUNT_PER_STEP;
+
+    if (renderedTasksCount >= tasks.length) {
+      loadMoreButton.remove();
+    }
+  });
+}
