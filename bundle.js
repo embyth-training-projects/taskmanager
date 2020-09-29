@@ -86,6 +86,22 @@
 /************************************************************************/
 /******/ ({
 
+/***/ "./src/const.js":
+/*!**********************!*\
+  !*** ./src/const.js ***!
+  \**********************/
+/*! exports provided: COLORS */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "COLORS", function() { return COLORS; });
+// Цвета заложеные в проект
+const COLORS = [`black`, `yellow`, `blue`, `green`, `pink`];
+
+
+/***/ }),
+
 /***/ "./src/main.js":
 /*!*********************!*\
   !*** ./src/main.js ***!
@@ -101,6 +117,10 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _view_task_edit__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./view/task-edit */ "./src/view/task-edit.js");
 /* harmony import */ var _view_task__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./view/task */ "./src/view/task.js");
 /* harmony import */ var _view_load_more_button__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./view/load-more-button */ "./src/view/load-more-button.js");
+/* harmony import */ var _mock_task__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./mock/task */ "./src/mock/task.js");
+/* harmony import */ var _mock_filter__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./mock/filter */ "./src/mock/filter.js");
+
+
 
 
 
@@ -109,7 +129,11 @@ __webpack_require__.r(__webpack_exports__);
 
 
 // Константа количества карточек заданий
-const TASK_AMOUNT = 3;
+const TASK_AMOUNT = 22;
+const TASK_AMOUNT_PER_STEP = 8;
+
+const tasks = new Array(TASK_AMOUNT).fill().map(_mock_task__WEBPACK_IMPORTED_MODULE_6__["generateTask"]);
+const filters = Object(_mock_filter__WEBPACK_IMPORTED_MODULE_7__["generateFilter"])(tasks);
 
 // Функция отрисовки элемента в контейнер
 const renderComponent = (container, element, place = `beforeend`) => {
@@ -121,19 +145,239 @@ const siteMainNode = document.querySelector(`.main`);
 const siteHeaderNode = siteMainNode.querySelector(`.main__control`);
 
 renderComponent(siteHeaderNode, Object(_view_site_menu__WEBPACK_IMPORTED_MODULE_0__["createSiteMenuTemplate"])());
-renderComponent(siteMainNode, Object(_view_filter__WEBPACK_IMPORTED_MODULE_1__["createFilterTemplate"])());
+renderComponent(siteMainNode, Object(_view_filter__WEBPACK_IMPORTED_MODULE_1__["createFilterTemplate"])(filters));
 renderComponent(siteMainNode, Object(_view_board__WEBPACK_IMPORTED_MODULE_2__["createBoardTemplate"])());
 
 const boardNode = siteMainNode.querySelector(`.board`);
 const taskListNode = boardNode.querySelector(`.board__tasks`);
 
-renderComponent(taskListNode, Object(_view_task_edit__WEBPACK_IMPORTED_MODULE_3__["createEditTaskTemplate"])());
+renderComponent(taskListNode, Object(_view_task_edit__WEBPACK_IMPORTED_MODULE_3__["createEditTaskTemplate"])(tasks[0]));
 
-for (let i = 0; i < TASK_AMOUNT; i++) {
-  renderComponent(taskListNode, Object(_view_task__WEBPACK_IMPORTED_MODULE_4__["createTaskCardTemplate"])());
+tasks
+  .slice(1, Math.min(tasks.length, TASK_AMOUNT_PER_STEP))
+  .forEach((task) => renderComponent(taskListNode, Object(_view_task__WEBPACK_IMPORTED_MODULE_4__["createTaskCardTemplate"])(task)));
+
+if (tasks.length > TASK_AMOUNT_PER_STEP) {
+  let renderedTasksCount = TASK_AMOUNT_PER_STEP;
+
+  renderComponent(boardNode, Object(_view_load_more_button__WEBPACK_IMPORTED_MODULE_5__["createLoadMoreButtonTemplate"])());
+
+  const loadMoreButton = boardNode.querySelector(`.load-more`);
+
+  loadMoreButton.addEventListener(`click`, (evt) => {
+    evt.preventDefault();
+
+    tasks
+      .slice(renderedTasksCount, renderedTasksCount + TASK_AMOUNT_PER_STEP)
+      .forEach((task) => renderComponent(taskListNode, Object(_view_task__WEBPACK_IMPORTED_MODULE_4__["createTaskCardTemplate"])(task)));
+
+    renderedTasksCount += TASK_AMOUNT_PER_STEP;
+
+    if (renderedTasksCount >= tasks.length) {
+      loadMoreButton.remove();
+    }
+  });
 }
 
-renderComponent(boardNode, Object(_view_load_more_button__WEBPACK_IMPORTED_MODULE_5__["createLoadMoreButtonTemplate"])());
+
+/***/ }),
+
+/***/ "./src/mock/filter.js":
+/*!****************************!*\
+  !*** ./src/mock/filter.js ***!
+  \****************************/
+/*! exports provided: generateFilter */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "generateFilter", function() { return generateFilter; });
+/* harmony import */ var _utils__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../utils */ "./src/utils.js");
+
+
+// Мапа где ключи - названия фильтров, а значения - функции-счетчики
+const taskToFilterMap = {
+  all: (tasks) => tasks.filter((task) => !task.isArchive).length,
+  overdue: (tasks) => tasks
+    .filter((task) => !task.isArchive)
+    .filter((task) => Object(_utils__WEBPACK_IMPORTED_MODULE_0__["isTaskExpired"])(task.dueDate)).length,
+  today: (tasks) => tasks
+    .filter((task) => !task.isArchive)
+    .filter((task) => Object(_utils__WEBPACK_IMPORTED_MODULE_0__["isTaskExpiringToday"])(task.dueDate)).length,
+  favorites: (tasks) => tasks
+    .filter((task) => !task.isArchive)
+    .filter((task) => task.isFavorite).length,
+  repeating: (tasks) => tasks
+    .filter((task) => !task.isArchive)
+    .filter((task) => Object(_utils__WEBPACK_IMPORTED_MODULE_0__["isTaskRepeating"])(task.repeating)).length,
+  archive: (tasks) => tasks.filter((task) => task.isArchive).length,
+};
+
+// Функция-генератор фильтров
+const generateFilter = (tasks) => {
+  return Object.entries(taskToFilterMap).map(([filterName, countTasks]) => {
+    return {
+      name: filterName,
+      count: countTasks(tasks),
+    };
+  });
+};
+
+
+/***/ }),
+
+/***/ "./src/mock/task.js":
+/*!**************************!*\
+  !*** ./src/mock/task.js ***!
+  \**************************/
+/*! exports provided: generateTask */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "generateTask", function() { return generateTask; });
+/* harmony import */ var _utils__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../utils */ "./src/utils.js");
+/* harmony import */ var _const__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../const */ "./src/const.js");
+
+
+
+// Функция генерации описания задачи случайным образом
+const generateDescription = () => {
+  const descriptions = [
+    `Изучить теорию`,
+    `Сделать домашку`,
+    `Пройти интенсив на соточку`,
+  ];
+
+  const randomIndex = Object(_utils__WEBPACK_IMPORTED_MODULE_0__["getRandomInteger"])(0, descriptions.length - 1);
+
+  return descriptions[randomIndex];
+};
+
+// Функция для генерации даты. По заданию это либо null, либо дата плюс-минус неделя от текущей
+const generateDate = () => {
+  const isDate = Boolean(Object(_utils__WEBPACK_IMPORTED_MODULE_0__["getRandomInteger"])(0, 1));
+
+  if (!isDate) {
+    return null;
+  }
+
+  const maxDaysGap = 7;
+  const daysGap = Object(_utils__WEBPACK_IMPORTED_MODULE_0__["getRandomInteger"])(-maxDaysGap, maxDaysGap);
+  const currentDate = new Date();
+
+  currentDate.setHours(23, 59, 59, 999);
+  currentDate.setDate(currentDate.getDate() + daysGap);
+
+  return new Date(currentDate);
+};
+
+// Функция для генерации дней повторения (будем выбирать случайно из двух)
+const generateRepeatingDays = () => {
+  return {
+    mo: false,
+    tu: false,
+    we: Boolean(Object(_utils__WEBPACK_IMPORTED_MODULE_0__["getRandomInteger"])(0, 1)),
+    th: false,
+    fr: Boolean(Object(_utils__WEBPACK_IMPORTED_MODULE_0__["getRandomInteger"])(0, 1)),
+    sa: false,
+    su: false
+  };
+};
+
+// Функция-генератор случайного цвета
+const getRandomColor = () => {
+  const randomIndex = Object(_utils__WEBPACK_IMPORTED_MODULE_0__["getRandomInteger"])(0, _const__WEBPACK_IMPORTED_MODULE_1__["COLORS"].length - 1);
+
+  return _const__WEBPACK_IMPORTED_MODULE_1__["COLORS"][randomIndex];
+};
+
+// Функция-генератор карточки задания
+const generateTask = () => {
+  const dueDate = generateDate();
+  const repeating = dueDate === null
+    ? generateRepeatingDays()
+    : {
+      mo: false,
+      tu: false,
+      we: false,
+      th: false,
+      fr: false,
+      sa: false,
+      su: false
+    };
+
+  return {
+    description: generateDescription(),
+    dueDate,
+    repeating,
+    color: getRandomColor(),
+    isArchive: Boolean(Object(_utils__WEBPACK_IMPORTED_MODULE_0__["getRandomInteger"])(0, 1)),
+    isFavorite: Boolean(Object(_utils__WEBPACK_IMPORTED_MODULE_0__["getRandomInteger"])(0, 1)),
+  };
+};
+
+
+/***/ }),
+
+/***/ "./src/utils.js":
+/*!**********************!*\
+  !*** ./src/utils.js ***!
+  \**********************/
+/*! exports provided: getRandomInteger, isTaskExpired, isTaskExpiringToday, isTaskRepeating, humanizeTaskDueDate */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "getRandomInteger", function() { return getRandomInteger; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "isTaskExpired", function() { return isTaskExpired; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "isTaskExpiringToday", function() { return isTaskExpiringToday; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "isTaskRepeating", function() { return isTaskRepeating; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "humanizeTaskDueDate", function() { return humanizeTaskDueDate; });
+// Функция из интернета по генерации случайного числа из диапазона
+const getRandomInteger = (a = 0, b = 1) => {
+  const lower = Math.ceil(Math.min(a, b));
+  const upper = Math.floor(Math.max(a, b));
+
+  return Math.floor(lower + Math.random() * (upper - lower + 1));
+};
+
+// Функция получения текущей даты
+const getCurrentDate = () => {
+  const currentDate = new Date();
+  currentDate.setHours(23, 59, 59, 999);
+  return new Date(currentDate);
+};
+
+// Функция проверки просрочена ли задача
+const isTaskExpired = (dueDate) => {
+  if (dueDate === null) {
+    return false;
+  }
+
+  const currentDate = getCurrentDate();
+  return currentDate.getTime() > dueDate.getTime();
+};
+
+// Функция проверки есть ли задачи на сегодня
+const isTaskExpiringToday = (dueDate) => {
+  if (dueDate === null) {
+    return false;
+  }
+
+  const currentDate = getCurrentDate();
+  return currentDate.getTime() === dueDate.getTime();
+};
+
+// Функция проверки на повторяющиеся дни в задаче
+const isTaskRepeating = (repeating) => {
+  return Object.values(repeating).some(Boolean);
+};
+
+// Функция перевода даты в понятную строку
+const humanizeTaskDueDate = (dueDate) => {
+  return dueDate.toLocaleString(`en-US`, {day: `numeric`, month: `long`});
+};
 
 
 /***/ }),
@@ -176,67 +420,34 @@ const createBoardTemplate = () => {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "createFilterTemplate", function() { return createFilterTemplate; });
+// Функция создания шаблона фильтра
+const createFilterItemTemplate = (filter, isChecked) => {
+  const {name, count} = filter;
+
+  return (`
+    <input
+      type="radio"
+      id="filter__${name}"
+      class="filter__input visually-hidden"
+      name="filter"
+      ${isChecked ? `checked` : ``}
+      ${count === 0 ? `disabled` : ``}
+    />
+    <label for="filter__${name}" class="filter__label">
+      ${name} <span class="filter__${name}-count">${count}</span>
+    </label>
+  `);
+};
+
 // Функция создания шаблона фильтров
-const createFilterTemplate = () => {
+const createFilterTemplate = (filterItems) => {
+  const filterItemsTemplate = filterItems
+    .map((filter, index) => createFilterItemTemplate(filter, index === 0))
+    .join(``);
+
   return (
     `<section class="main__filter filter container">
-      <input
-        type="radio"
-        id="filter__all"
-        class="filter__input visually-hidden"
-        name="filter"
-        checked
-      />
-      <label for="filter__all" class="filter__label">
-        All <span class="filter__all-count">13</span></label
-      >
-      <input
-        type="radio"
-        id="filter__overdue"
-        class="filter__input visually-hidden"
-        name="filter"
-        disabled
-      />
-      <label for="filter__overdue" class="filter__label"
-        >Overdue <span class="filter__overdue-count">0</span></label
-      >
-      <input
-        type="radio"
-        id="filter__today"
-        class="filter__input visually-hidden"
-        name="filter"
-        disabled
-      />
-      <label for="filter__today" class="filter__label"
-        >Today <span class="filter__today-count">0</span></label
-      >
-      <input
-        type="radio"
-        id="filter__favorites"
-        class="filter__input visually-hidden"
-        name="filter"
-      />
-      <label for="filter__favorites" class="filter__label"
-        >Favorites <span class="filter__favorites-count">1</span></label
-      >
-      <input
-        type="radio"
-        id="filter__repeating"
-        class="filter__input visually-hidden"
-        name="filter"
-      />
-      <label for="filter__repeating" class="filter__label"
-        >Repeating <span class="filter__repeating-count">1</span></label
-      >
-      <input
-        type="radio"
-        id="filter__archive"
-        class="filter__input visually-hidden"
-        name="filter"
-      />
-      <label for="filter__archive" class="filter__label"
-        >Archive <span class="filter__archive-count">115</span></label
-      >
+      ${filterItemsTemplate}
     </section>`
   );
 };
@@ -321,10 +532,111 @@ const createSiteMenuTemplate = () => {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "createEditTaskTemplate", function() { return createEditTaskTemplate; });
+/* harmony import */ var _utils__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../utils */ "./src/utils.js");
+/* harmony import */ var _const__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../const */ "./src/const.js");
+
+
+
+// Функция создания шаблона с выбором даты
+const createEditTaskDateTemplate = (dueDate) => {
+  return (`
+    <button class="card__date-deadline-toggle" type="button">
+      date: <span class="card__date-status">${dueDate === null ? `no` : `yes`}</span>
+    </button>
+
+    ${dueDate !== null
+      ? `<fieldset class="card__date-deadline">
+          <label class="card__input-deadline-wrap">
+            <input
+              class="card__date"
+              type="text"
+              placeholder=""
+              name="date"
+              value="${Object(_utils__WEBPACK_IMPORTED_MODULE_0__["humanizeTaskDueDate"])(dueDate)}"
+            />
+          </label>
+        </fieldset>`
+      : ``}
+  `);
+};
+
+// Функция создания шаблона с выбором дня повторения
+const createEditTaskRepeatingTemplate = (repeating) => {
+  return (`
+    <button class="card__repeat-toggle" type="button">
+      repeat:<span class="card__repeat-status">${Object(_utils__WEBPACK_IMPORTED_MODULE_0__["isTaskRepeating"])(repeating) ? `yes` : `no`}</span>
+    </button>
+
+    ${Object(_utils__WEBPACK_IMPORTED_MODULE_0__["isTaskRepeating"])(repeating)
+      ? `<fieldset class="card__repeat-days">
+          <div class="card__repeat-days-inner">
+          ${Object.entries(repeating).map(([day, repeat]) => `
+            <input
+              class="visually-hidden card__repeat-day-input"
+              type="checkbox"
+              id="repeat-${day}"
+              name="repeat"
+              value="${day}"
+              ${repeat ? `checked` : ``}
+            />
+            <label class="card__repeat-day" for="repeat-${day}">${day}</label>
+          `).join(``)}
+          </div>
+        </fieldset>`
+      : ``}
+  `);
+};
+
+// Функция создания шаблона с выбором цвета
+const createEditTaskColorsTemplate = (currentColor) => {
+  return _const__WEBPACK_IMPORTED_MODULE_1__["COLORS"].map((color) => `
+    <input
+      type="radio"
+      id="color-${color}"
+      class="card__color-input card__color-input--${color} visually-hidden"
+      name="color"
+      value="${color}"
+      ${currentColor === color ? `checked` : ``}
+    />
+    <label
+      for="color-${color}"
+      class="card__color card__color--${color}"
+      >${color}</label
+    >
+  `).join(``);
+};
+
 // Функция создания шаблона редактирования карточки задания
-const createEditTaskTemplate = () => {
+const createEditTaskTemplate = (task = {}) => {
+  const {
+    color = `black`,
+    description = ``,
+    dueDate = null,
+    repeating = {
+      mo: false,
+      tu: false,
+      we: false,
+      th: false,
+      fr: false,
+      sa: false,
+      su: false,
+    }
+  } = task;
+
+  const deadlineClassName = Object(_utils__WEBPACK_IMPORTED_MODULE_0__["isTaskExpired"])(dueDate)
+    ? `card--deadline`
+    : ``;
+
+  const repeatingClassName = Object(_utils__WEBPACK_IMPORTED_MODULE_0__["isTaskRepeating"])(repeating)
+    ? `card--repeat`
+    : ``;
+
+  const dateTemplate = createEditTaskDateTemplate(dueDate);
+  const repeatingTemplate = createEditTaskRepeatingTemplate(repeating);
+  const colorsTemplate = createEditTaskColorsTemplate(color);
+
   return (
-    `<article class="card card--edit card--yellow card--repeat">
+    `<article class="card card--edit card--${color} ${deadlineClassName} ${repeatingClassName}">
       <form class="card__form" method="get">
         <div class="card__inner">
           <div class="card__color-bar">
@@ -339,177 +651,22 @@ const createEditTaskTemplate = () => {
                 class="card__text"
                 placeholder="Start typing your text here..."
                 name="text"
-              >This is example of task edit. You can set date and chose repeating days and color.</textarea>
+              >${description}</textarea>
             </label>
           </div>
 
           <div class="card__settings">
             <div class="card__details">
               <div class="card__dates">
-                <button class="card__date-deadline-toggle" type="button">
-                  date: <span class="card__date-status">yes</span>
-                </button>
-
-                <fieldset class="card__date-deadline">
-                  <label class="card__input-deadline-wrap">
-                    <input
-                      class="card__date"
-                      type="text"
-                      placeholder=""
-                      name="date"
-                      value="23 September 16:15"
-                    />
-                  </label>
-                </fieldset>
-
-                <button class="card__repeat-toggle" type="button">
-                  repeat:<span class="card__repeat-status">yes</span>
-                </button>
-
-                <fieldset class="card__repeat-days">
-                  <div class="card__repeat-days-inner">
-                    <input
-                      class="visually-hidden card__repeat-day-input"
-                      type="checkbox"
-                      id="repeat-mo-4"
-                      name="repeat"
-                      value="mo"
-                    />
-                    <label class="card__repeat-day" for="repeat-mo-4"
-                      >mo</label
-                    >
-                    <input
-                      class="visually-hidden card__repeat-day-input"
-                      type="checkbox"
-                      id="repeat-tu-4"
-                      name="repeat"
-                      value="tu"
-                      checked
-                    />
-                    <label class="card__repeat-day" for="repeat-tu-4"
-                      >tu</label
-                    >
-                    <input
-                      class="visually-hidden card__repeat-day-input"
-                      type="checkbox"
-                      id="repeat-we-4"
-                      name="repeat"
-                      value="we"
-                    />
-                    <label class="card__repeat-day" for="repeat-we-4"
-                      >we</label
-                    >
-                    <input
-                      class="visually-hidden card__repeat-day-input"
-                      type="checkbox"
-                      id="repeat-th-4"
-                      name="repeat"
-                      value="th"
-                    />
-                    <label class="card__repeat-day" for="repeat-th-4"
-                      >th</label
-                    >
-                    <input
-                      class="visually-hidden card__repeat-day-input"
-                      type="checkbox"
-                      id="repeat-fr-4"
-                      name="repeat"
-                      value="fr"
-                      checked
-                    />
-                    <label class="card__repeat-day" for="repeat-fr-4"
-                      >fr</label
-                    >
-                    <input
-                      class="visually-hidden card__repeat-day-input"
-                      type="checkbox"
-                      name="repeat"
-                      value="sa"
-                      id="repeat-sa-4"
-                    />
-                    <label class="card__repeat-day" for="repeat-sa-4"
-                      >sa</label
-                    >
-                    <input
-                      class="visually-hidden card__repeat-day-input"
-                      type="checkbox"
-                      id="repeat-su-4"
-                      name="repeat"
-                      value="su"
-                      checked
-                    />
-                    <label class="card__repeat-day" for="repeat-su-4"
-                      >su</label
-                    >
-                  </div>
-                </fieldset>
+                ${dateTemplate}
+                ${repeatingTemplate}
               </div>
             </div>
 
             <div class="card__colors-inner">
               <h3 class="card__colors-title">Color</h3>
               <div class="card__colors-wrap">
-                <input
-                  type="radio"
-                  id="color-black-4"
-                  class="card__color-input card__color-input--black visually-hidden"
-                  name="color"
-                  value="black"
-                />
-                <label
-                  for="color-black-4"
-                  class="card__color card__color--black"
-                  >black</label
-                >
-                <input
-                  type="radio"
-                  id="color-yellow-4"
-                  class="card__color-input card__color-input--yellow visually-hidden"
-                  name="color"
-                  value="yellow"
-                  checked
-                />
-                <label
-                  for="color-yellow-4"
-                  class="card__color card__color--yellow"
-                  >yellow</label
-                >
-                <input
-                  type="radio"
-                  id="color-blue-4"
-                  class="card__color-input card__color-input--blue visually-hidden"
-                  name="color"
-                  value="blue"
-                />
-                <label
-                  for="color-blue-4"
-                  class="card__color card__color--blue"
-                  >blue</label
-                >
-                <input
-                  type="radio"
-                  id="color-green-4"
-                  class="card__color-input card__color-input--green visually-hidden"
-                  name="color"
-                  value="green"
-                />
-                <label
-                  for="color-green-4"
-                  class="card__color card__color--green"
-                  >green</label
-                >
-                <input
-                  type="radio"
-                  id="color-pink-4"
-                  class="card__color-input card__color-input--pink visually-hidden"
-                  name="color"
-                  value="pink"
-                />
-                <label
-                  for="color-pink-4"
-                  class="card__color card__color--pink"
-                  >pink</label
-                >
+                ${colorsTemplate}
               </div>
             </div>
           </div>
@@ -537,22 +694,47 @@ const createEditTaskTemplate = () => {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "createTaskCardTemplate", function() { return createTaskCardTemplate; });
+/* harmony import */ var _utils__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../utils */ "./src/utils.js");
+
+
 // Функция создания шаблона карточки задания
-const createTaskCardTemplate = () => {
+const createTaskCardTemplate = (task) => {
+  const {color, description, dueDate, repeating, isArchive, isFavorite} = task;
+
+  const date = dueDate !== null
+    ? Object(_utils__WEBPACK_IMPORTED_MODULE_0__["humanizeTaskDueDate"])(dueDate)
+    : ``;
+
+  const deadlineClassName = Object(_utils__WEBPACK_IMPORTED_MODULE_0__["isTaskExpired"])(dueDate)
+    ? `card--deadline`
+    : ``;
+
+  const repeatClassName = Object(_utils__WEBPACK_IMPORTED_MODULE_0__["isTaskRepeating"])(repeating)
+    ? `card--repeat`
+    : ``;
+
+  const archiveClassName = isArchive
+    ? `card__btn--archive card__btn--disabled`
+    : `card__btn--archive`;
+
+  const favoriteClassName = isFavorite
+    ? `card__btn--favorites card__btn--disabled`
+    : `card__btn--favorites`;
+
   return (
-    `<article class="card card--black">
+    `<article class="card card--${color} ${deadlineClassName} ${repeatClassName}">
       <div class="card__form">
         <div class="card__inner">
           <div class="card__control">
             <button type="button" class="card__btn card__btn--edit">
               edit
             </button>
-            <button type="button" class="card__btn card__btn--archive">
+            <button type="button" class="card__btn ${archiveClassName}">
               archive
             </button>
             <button
               type="button"
-              class="card__btn card__btn--favorites"
+              class="card__btn ${favoriteClassName}"
             >
               favorites
             </button>
@@ -565,7 +747,7 @@ const createTaskCardTemplate = () => {
           </div>
 
           <div class="card__textarea-wrap">
-            <p class="card__text">Example task with default color.</p>
+            <p class="card__text">${description}</p>
           </div>
 
           <div class="card__settings">
@@ -573,7 +755,7 @@ const createTaskCardTemplate = () => {
               <div class="card__dates">
                 <div class="card__date-deadline">
                   <p class="card__input-deadline-wrap">
-                    <span class="card__date">23 September</span>
+                    <span class="card__date">${date}</span>
                   </p>
                 </div>
               </div>
