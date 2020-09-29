@@ -1,20 +1,5 @@
-// Функция проверки просрочена ли задача
-const isExpired = (dueDate) => {
-  if (dueDate === null) {
-    return false;
-  }
-
-  let currentDate = new Date();
-  currentDate.setHours(23, 59, 59, 999);
-  currentDate = new Date(currentDate);
-
-  return currentDate.getTime() > dueDate.getTime();
-};
-
-// Функция проверки на повторяющиеся дни
-const isRepeating = (repeating) => {
-  return Object.values(repeating).some(Boolean);
-};
+import {isTaskExpired, isTaskRepeating, humanizeTaskDueDate} from '../utils';
+import {COLORS} from '../const';
 
 // Функция создания шаблона с выбором даты
 const createEditTaskDateTemplate = (dueDate) => {
@@ -31,7 +16,7 @@ const createEditTaskDateTemplate = (dueDate) => {
               type="text"
               placeholder=""
               name="date"
-              value="${dueDate.toLocaleString(`en-US`, {day: `numeric`, month: `long`})}"
+              value="${humanizeTaskDueDate(dueDate)}"
             />
           </label>
         </fieldset>`
@@ -43,10 +28,10 @@ const createEditTaskDateTemplate = (dueDate) => {
 const createEditTaskRepeatingTemplate = (repeating) => {
   return (`
     <button class="card__repeat-toggle" type="button">
-      repeat:<span class="card__repeat-status">${isRepeating(repeating) ? `yes` : `no`}</span>
+      repeat:<span class="card__repeat-status">${isTaskRepeating(repeating) ? `yes` : `no`}</span>
     </button>
 
-    ${isRepeating(repeating)
+    ${isTaskRepeating(repeating)
       ? `<fieldset class="card__repeat-days">
           <div class="card__repeat-days-inner">
           ${Object.entries(repeating).map(([day, repeat]) => `
@@ -68,9 +53,7 @@ const createEditTaskRepeatingTemplate = (repeating) => {
 
 // Функция создания шаблона с выбором цвета
 const createEditTaskColorsTemplate = (currentColor) => {
-  const colors = [`black`, `yellow`, `blue`, `green`, `pink`];
-
-  return colors.map((color) => `
+  return COLORS.map((color) => `
     <input
       type="radio"
       id="color-${color}"
@@ -104,11 +87,11 @@ export const createEditTaskTemplate = (task = {}) => {
     }
   } = task;
 
-  const deadlineClassName = isExpired(dueDate)
+  const deadlineClassName = isTaskExpired(dueDate)
     ? `card--deadline`
     : ``;
 
-  const repeatingClassName = isRepeating(repeating)
+  const repeatingClassName = isTaskRepeating(repeating)
     ? `card--repeat`
     : ``;
 
