@@ -52,10 +52,23 @@ const generateRepeatingDays = () => {
 
 // Функция-генератор карточки задания
 export const generateTask = () => {
+  const dueDate = generateDate();
+  const repeating = dueDate === null
+    ? generateRepeatingDays()
+    : {
+      mo: false,
+      tu: false,
+      we: false,
+      th: false,
+      fr: false,
+      sa: false,
+      su: false
+    };
+
   return {
     description: generateDescription(),
-    dueDate: generateDate(),
-    repeating: generateRepeatingDays(),
+    dueDate,
+    repeating,
     color: `black`,
     isArchive: false,
     isFavorite: false,
