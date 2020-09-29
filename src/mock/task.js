@@ -37,20 +37,25 @@ const generateDate = () => {
   return new Date(currentDate);
 };
 
+// Функция для генерации дней повторения (будем выбирать случайно из двух)
+const generateRepeatingDays = () => {
+  return {
+    mo: false,
+    tu: false,
+    we: Boolean(getRandomInteger(0, 1)),
+    th: false,
+    fr: Boolean(getRandomInteger(0, 1)),
+    sa: false,
+    su: false
+  };
+};
+
 // Функция-генератор карточки задания
 export const generateTask = () => {
   return {
     description: generateDescription(),
     dueDate: generateDate(),
-    repeating: {
-      mo: false,
-      tu: false,
-      we: false,
-      th: false,
-      fr: false,
-      sa: false,
-      su: false
-    },
+    repeating: generateRepeatingDays(),
     color: `black`,
     isArchive: false,
     isFavorite: false,
