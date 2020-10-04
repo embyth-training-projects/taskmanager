@@ -1,4 +1,4 @@
-import {createSiteMenuTemplate} from './view/site-menu';
+import SiteMenuView from './view/site-menu';
 import {createFilterTemplate} from './view/filter';
 import {createBoardTemplate} from './view/board';
 import {createEditTaskTemplate} from './view/task-edit';
@@ -6,7 +6,7 @@ import {createTaskCardTemplate} from './view/task';
 import {createLoadMoreButtonTemplate} from './view/load-more-button';
 import {generateTask} from './mock/task';
 import {generateFilter} from './mock/filter';
-import {renderTemplate} from './utils';
+import {renderTemplate, renderElement, RenderPosition} from './utils';
 
 // Константа количества карточек заданий
 const TASK_AMOUNT = 22;
@@ -19,7 +19,7 @@ const filters = generateFilter(tasks);
 const siteMainNode = document.querySelector(`.main`);
 const siteHeaderNode = siteMainNode.querySelector(`.main__control`);
 
-renderTemplate(siteHeaderNode, createSiteMenuTemplate());
+renderElement(siteHeaderNode, new SiteMenuView().getElement(), RenderPosition.BEFOREEND);
 renderTemplate(siteMainNode, createFilterTemplate(filters));
 renderTemplate(siteMainNode, createBoardTemplate());
 
