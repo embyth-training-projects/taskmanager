@@ -20,8 +20,8 @@ const BLANK_TASK = {
 
 // Функция создания шаблона с выбором даты
 const createEditTaskDateTemplate = (dueDate) => {
-  return (`
-    <button class="card__date-deadline-toggle" type="button">
+  return (
+    `<button class="card__date-deadline-toggle" type="button">
       date: <span class="card__date-status">${dueDate === null ? `no` : `yes`}</span>
     </button>
 
@@ -64,8 +64,8 @@ const createEditTaskRepeatingTemplate = (repeating) => {
           `).join(``)}
           </div>
         </fieldset>`
-      : ``}
-  `);
+      : ``}`
+  );
 };
 
 // Функция создания шаблона с выбором цвета
