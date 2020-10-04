@@ -1,7 +1,7 @@
-import {isTaskExpired, isTaskRepeating, humanizeTaskDueDate} from '../utils';
+import {isTaskExpired, isTaskRepeating, humanizeTaskDueDate, createElement} from '../utils';
 
 // Функция создания шаблона карточки задания
-export const createTaskCardTemplate = (task) => {
+const createTaskCardTemplate = (task) => {
   const {color, description, dueDate, repeating, isArchive, isFavorite} = task;
 
   const date = dueDate !== null
@@ -69,3 +69,26 @@ export const createTaskCardTemplate = (task) => {
     </article>`
   );
 };
+
+export default class Task {
+  constructor(task) {
+    this._task = task;
+    this._element = null;
+  }
+
+  getTemplate() {
+    return createTaskCardTemplate(this._task);
+  }
+
+  getElement() {
+    if (!this._element) {
+      this._element = createElement(this.getTemplate());
+    }
+
+    return this._element;
+  }
+
+  removeElement() {
+    this._element = null;
+  }
+}

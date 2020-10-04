@@ -3,8 +3,8 @@ import FilterView from './view/filter';
 import BoardView from './view/board';
 import SortView from './view/sort';
 import TaskListView from './view/task-list';
-import {createEditTaskTemplate} from './view/task-edit';
-import {createTaskCardTemplate} from './view/task';
+import TaskEditView from './view/task-edit';
+import TaskView from './view/task';
 import LoadMoreButtonView from './view/load-more-button';
 import {generateTask} from './mock/task';
 import {generateFilter} from './mock/filter';
@@ -30,11 +30,11 @@ renderElement(boardComponent.getElement(), new SortView().getElement(), RenderPo
 
 const taskListComponent = new TaskListView();
 renderElement(boardComponent.getElement(), taskListComponent.getElement(), RenderPosition.BEFOREEND);
-renderTemplate(taskListComponent.getElement(), createEditTaskTemplate(tasks[0]), RenderPosition.BEFOREEND);
+renderElement(taskListComponent.getElement(), new TaskEditView(tasks[0]).getElement(), RenderPosition.BEFOREEND);
 
 tasks
   .slice(1, Math.min(tasks.length, TASK_AMOUNT_PER_STEP))
-  .forEach((task) => renderTemplate(taskListComponent.getElement(), createTaskCardTemplate(task)));
+  .forEach((task) => renderElement(taskListComponent.getElement(), new TaskView(task).getElement(), RenderPosition.BEFOREEND));
 
 if (tasks.length > TASK_AMOUNT_PER_STEP) {
   let renderedTasksCount = TASK_AMOUNT_PER_STEP;
@@ -47,7 +47,7 @@ if (tasks.length > TASK_AMOUNT_PER_STEP) {
 
     tasks
       .slice(renderedTasksCount, renderedTasksCount + TASK_AMOUNT_PER_STEP)
-      .forEach((task) => renderTemplate(taskListComponent.getElement(), createTaskCardTemplate(task)));
+      .forEach((task) => renderElement(taskListComponent.getElement(), new TaskView(task).getElement(), RenderPosition.BEFOREEND));
 
     renderedTasksCount += TASK_AMOUNT_PER_STEP;
 
