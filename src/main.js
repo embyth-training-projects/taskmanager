@@ -6,6 +6,7 @@ import {createTaskCardTemplate} from './view/task';
 import {createLoadMoreButtonTemplate} from './view/load-more-button';
 import {generateTask} from './mock/task';
 import {generateFilter} from './mock/filter';
+import {renderTemplate} from './utils';
 
 // Константа количества карточек заданий
 const TASK_AMOUNT = 22;
@@ -14,32 +15,27 @@ const TASK_AMOUNT_PER_STEP = 8;
 const tasks = new Array(TASK_AMOUNT).fill().map(generateTask);
 const filters = generateFilter(tasks);
 
-// Функция отрисовки элемента в контейнер
-const renderComponent = (container, element, place = `beforeend`) => {
-  container.insertAdjacentHTML(place, element);
-};
-
 // Отрисовываем шаблоны на страницу
 const siteMainNode = document.querySelector(`.main`);
 const siteHeaderNode = siteMainNode.querySelector(`.main__control`);
 
-renderComponent(siteHeaderNode, createSiteMenuTemplate());
-renderComponent(siteMainNode, createFilterTemplate(filters));
-renderComponent(siteMainNode, createBoardTemplate());
+renderTemplate(siteHeaderNode, createSiteMenuTemplate());
+renderTemplate(siteMainNode, createFilterTemplate(filters));
+renderTemplate(siteMainNode, createBoardTemplate());
 
 const boardNode = siteMainNode.querySelector(`.board`);
 const taskListNode = boardNode.querySelector(`.board__tasks`);
 
-renderComponent(taskListNode, createEditTaskTemplate(tasks[0]));
+renderTemplate(taskListNode, createEditTaskTemplate(tasks[0]));
 
 tasks
   .slice(1, Math.min(tasks.length, TASK_AMOUNT_PER_STEP))
-  .forEach((task) => renderComponent(taskListNode, createTaskCardTemplate(task)));
+  .forEach((task) => renderTemplate(taskListNode, createTaskCardTemplate(task)));
 
 if (tasks.length > TASK_AMOUNT_PER_STEP) {
   let renderedTasksCount = TASK_AMOUNT_PER_STEP;
 
-  renderComponent(boardNode, createLoadMoreButtonTemplate());
+  renderTemplate(boardNode, createLoadMoreButtonTemplate());
 
   const loadMoreButton = boardNode.querySelector(`.load-more`);
 
@@ -48,7 +44,7 @@ if (tasks.length > TASK_AMOUNT_PER_STEP) {
 
     tasks
       .slice(renderedTasksCount, renderedTasksCount + TASK_AMOUNT_PER_STEP)
-      .forEach((task) => renderComponent(taskListNode, createTaskCardTemplate(task)));
+      .forEach((task) => renderTemplate(taskListNode, createTaskCardTemplate(task)));
 
     renderedTasksCount += TASK_AMOUNT_PER_STEP;
 
