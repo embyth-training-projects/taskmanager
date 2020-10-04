@@ -114,11 +114,19 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _view_site_menu__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./view/site-menu */ "./src/view/site-menu.js");
 /* harmony import */ var _view_filter__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./view/filter */ "./src/view/filter.js");
 /* harmony import */ var _view_board__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./view/board */ "./src/view/board.js");
-/* harmony import */ var _view_task_edit__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./view/task-edit */ "./src/view/task-edit.js");
-/* harmony import */ var _view_task__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./view/task */ "./src/view/task.js");
-/* harmony import */ var _view_load_more_button__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./view/load-more-button */ "./src/view/load-more-button.js");
-/* harmony import */ var _mock_task__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./mock/task */ "./src/mock/task.js");
-/* harmony import */ var _mock_filter__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./mock/filter */ "./src/mock/filter.js");
+/* harmony import */ var _view_sort__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./view/sort */ "./src/view/sort.js");
+/* harmony import */ var _view_task_list__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./view/task-list */ "./src/view/task-list.js");
+/* harmony import */ var _view_task_edit__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./view/task-edit */ "./src/view/task-edit.js");
+/* harmony import */ var _view_task__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./view/task */ "./src/view/task.js");
+/* harmony import */ var _view_no_task__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./view/no-task */ "./src/view/no-task.js");
+/* harmony import */ var _view_load_more_button__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./view/load-more-button */ "./src/view/load-more-button.js");
+/* harmony import */ var _mock_task__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./mock/task */ "./src/mock/task.js");
+/* harmony import */ var _mock_filter__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ./mock/filter */ "./src/mock/filter.js");
+/* harmony import */ var _utils__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ./utils */ "./src/utils.js");
+
+
+
+
 
 
 
@@ -132,52 +140,90 @@ __webpack_require__.r(__webpack_exports__);
 const TASK_AMOUNT = 22;
 const TASK_AMOUNT_PER_STEP = 8;
 
-const tasks = new Array(TASK_AMOUNT).fill().map(_mock_task__WEBPACK_IMPORTED_MODULE_6__["generateTask"]);
-const filters = Object(_mock_filter__WEBPACK_IMPORTED_MODULE_7__["generateFilter"])(tasks);
+const tasks = new Array(TASK_AMOUNT).fill().map(_mock_task__WEBPACK_IMPORTED_MODULE_9__["generateTask"]);
+const filters = Object(_mock_filter__WEBPACK_IMPORTED_MODULE_10__["generateFilter"])(tasks);
 
-// Функция отрисовки элемента в контейнер
-const renderComponent = (container, element, place = `beforeend`) => {
-  container.insertAdjacentHTML(place, element);
-};
-
-// Отрисовываем шаблоны на страницу
 const siteMainNode = document.querySelector(`.main`);
 const siteHeaderNode = siteMainNode.querySelector(`.main__control`);
 
-renderComponent(siteHeaderNode, Object(_view_site_menu__WEBPACK_IMPORTED_MODULE_0__["createSiteMenuTemplate"])());
-renderComponent(siteMainNode, Object(_view_filter__WEBPACK_IMPORTED_MODULE_1__["createFilterTemplate"])(filters));
-renderComponent(siteMainNode, Object(_view_board__WEBPACK_IMPORTED_MODULE_2__["createBoardTemplate"])());
+const renderTask = (taskListElement, task) => {
+  const taskComponent = new _view_task__WEBPACK_IMPORTED_MODULE_6__["default"](task);
+  const taskEditComponent = new _view_task_edit__WEBPACK_IMPORTED_MODULE_5__["default"](task);
 
-const boardNode = siteMainNode.querySelector(`.board`);
-const taskListNode = boardNode.querySelector(`.board__tasks`);
+  const replaceCardToForm = () => {
+    taskListElement.replaceChild(taskEditComponent.getElement(), taskComponent.getElement());
+  };
 
-renderComponent(taskListNode, Object(_view_task_edit__WEBPACK_IMPORTED_MODULE_3__["createEditTaskTemplate"])(tasks[0]));
+  const replaceFormToCard = () => {
+    taskListElement.replaceChild(taskComponent.getElement(), taskEditComponent.getElement());
+  };
 
-tasks
-  .slice(1, Math.min(tasks.length, TASK_AMOUNT_PER_STEP))
-  .forEach((task) => renderComponent(taskListNode, Object(_view_task__WEBPACK_IMPORTED_MODULE_4__["createTaskCardTemplate"])(task)));
-
-if (tasks.length > TASK_AMOUNT_PER_STEP) {
-  let renderedTasksCount = TASK_AMOUNT_PER_STEP;
-
-  renderComponent(boardNode, Object(_view_load_more_button__WEBPACK_IMPORTED_MODULE_5__["createLoadMoreButtonTemplate"])());
-
-  const loadMoreButton = boardNode.querySelector(`.load-more`);
-
-  loadMoreButton.addEventListener(`click`, (evt) => {
-    evt.preventDefault();
-
-    tasks
-      .slice(renderedTasksCount, renderedTasksCount + TASK_AMOUNT_PER_STEP)
-      .forEach((task) => renderComponent(taskListNode, Object(_view_task__WEBPACK_IMPORTED_MODULE_4__["createTaskCardTemplate"])(task)));
-
-    renderedTasksCount += TASK_AMOUNT_PER_STEP;
-
-    if (renderedTasksCount >= tasks.length) {
-      loadMoreButton.remove();
+  const onEscKeyDown = (evt) => {
+    if (evt.key === `Escape` || evt.key === `Esc`) {
+      evt.preventDefault();
+      replaceFormToCard();
+      document.removeEventListener(`keydown`, onEscKeyDown);
     }
+  };
+
+  taskComponent.getElement().querySelector(`.card__btn--edit`).addEventListener(`click`, () => {
+    replaceCardToForm();
+    document.addEventListener(`keydown`, onEscKeyDown);
   });
-}
+
+  taskEditComponent.getElement().querySelector(`form`).addEventListener(`submit`, (evt) => {
+    evt.preventDefault();
+    replaceFormToCard();
+    document.removeEventListener(`keydown`, onEscKeyDown);
+  });
+
+  Object(_utils__WEBPACK_IMPORTED_MODULE_11__["render"])(taskListElement, taskComponent.getElement(), _utils__WEBPACK_IMPORTED_MODULE_11__["RenderPosition"].BEFOREEND);
+};
+
+const renderBoard = (boardContainer, boardTasks) => {
+  const boardComponent = new _view_board__WEBPACK_IMPORTED_MODULE_2__["default"]();
+  const taskListComponent = new _view_task_list__WEBPACK_IMPORTED_MODULE_4__["default"]();
+
+  Object(_utils__WEBPACK_IMPORTED_MODULE_11__["render"])(boardContainer, boardComponent.getElement(), _utils__WEBPACK_IMPORTED_MODULE_11__["RenderPosition"].BEFOREEND);
+
+  if (boardTasks.every((task) => task.isArchive)) {
+    Object(_utils__WEBPACK_IMPORTED_MODULE_11__["render"])(boardComponent.getElement(), new _view_no_task__WEBPACK_IMPORTED_MODULE_7__["default"]().getElement(), _utils__WEBPACK_IMPORTED_MODULE_11__["RenderPosition"].BEFOREEND);
+    return;
+  }
+
+  Object(_utils__WEBPACK_IMPORTED_MODULE_11__["render"])(boardComponent.getElement(), new _view_sort__WEBPACK_IMPORTED_MODULE_3__["default"]().getElement(), _utils__WEBPACK_IMPORTED_MODULE_11__["RenderPosition"].AFTERBEGIN);
+  Object(_utils__WEBPACK_IMPORTED_MODULE_11__["render"])(boardComponent.getElement(), taskListComponent.getElement(), _utils__WEBPACK_IMPORTED_MODULE_11__["RenderPosition"].BEFOREEND);
+
+  boardTasks
+    .slice(0, Math.min(boardTasks.length, TASK_AMOUNT_PER_STEP))
+    .forEach((task) => renderTask(taskListComponent.getElement(), task));
+
+  if (boardTasks.length > TASK_AMOUNT_PER_STEP) {
+    let renderedTasksCount = TASK_AMOUNT_PER_STEP;
+
+    const loadMoreButtonComponent = new _view_load_more_button__WEBPACK_IMPORTED_MODULE_8__["default"]();
+    Object(_utils__WEBPACK_IMPORTED_MODULE_11__["render"])(boardComponent.getElement(), loadMoreButtonComponent.getElement(), _utils__WEBPACK_IMPORTED_MODULE_11__["RenderPosition"].BEFOREEND);
+
+    loadMoreButtonComponent.getElement().addEventListener(`click`, (evt) => {
+      evt.preventDefault();
+
+      boardTasks
+        .slice(renderedTasksCount, renderedTasksCount + TASK_AMOUNT_PER_STEP)
+        .forEach((task) => renderTask(taskListComponent.getElement(), task));
+
+      renderedTasksCount += TASK_AMOUNT_PER_STEP;
+
+      if (renderedTasksCount >= boardTasks.length) {
+        loadMoreButtonComponent.getElement().remove();
+        loadMoreButtonComponent.removeElement();
+      }
+    });
+  }
+};
+
+Object(_utils__WEBPACK_IMPORTED_MODULE_11__["render"])(siteHeaderNode, new _view_site_menu__WEBPACK_IMPORTED_MODULE_0__["default"]().getElement(), _utils__WEBPACK_IMPORTED_MODULE_11__["RenderPosition"].BEFOREEND);
+Object(_utils__WEBPACK_IMPORTED_MODULE_11__["render"])(siteMainNode, new _view_filter__WEBPACK_IMPORTED_MODULE_1__["default"](filters).getElement(), _utils__WEBPACK_IMPORTED_MODULE_11__["RenderPosition"].BEFOREEND);
+renderBoard(siteMainNode, tasks);
 
 
 /***/ }),
@@ -324,16 +370,53 @@ const generateTask = () => {
 /*!**********************!*\
   !*** ./src/utils.js ***!
   \**********************/
-/*! exports provided: getRandomInteger, isTaskExpired, isTaskExpiringToday, isTaskRepeating, humanizeTaskDueDate */
+/*! exports provided: RenderPosition, render, renderTemplate, createElement, getRandomInteger, isTaskExpired, isTaskExpiringToday, isTaskRepeating, humanizeTaskDueDate */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "RenderPosition", function() { return RenderPosition; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "render", function() { return render; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "renderTemplate", function() { return renderTemplate; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "createElement", function() { return createElement; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "getRandomInteger", function() { return getRandomInteger; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "isTaskExpired", function() { return isTaskExpired; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "isTaskExpiringToday", function() { return isTaskExpiringToday; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "isTaskRepeating", function() { return isTaskRepeating; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "humanizeTaskDueDate", function() { return humanizeTaskDueDate; });
+const RenderPosition = {
+  AFTERBEGIN: `afterbegin`,
+  BEFOREEND: `beforeend`,
+};
+
+// Render-функцию для отрисовки элемента
+const render = (container, element, place) => {
+  switch (place) {
+    case RenderPosition.AFTERBEGIN:
+      container.prepend(element);
+      break;
+    case RenderPosition.BEFOREEND:
+      container.append(element);
+      break;
+  }
+};
+
+// Функция отрисовки элемента в контейнер
+const renderTemplate = (container, element, place = `beforeend`) => {
+  container.insertAdjacentHTML(place, element);
+};
+
+// Принцип работы прост:
+// 1. создаём пустой div-блок
+// 2. берём HTML в виде строки и вкладываем в этот div-блок, превращая в DOM-элемент
+// 3. возвращаем этот DOM-элемент
+const createElement = (template) => {
+  const newElement = document.createElement(`div`); // 1
+  newElement.innerHTML = template; // 2
+
+  return newElement.firstChild; // 3
+};
+
 // Функция из интернета по генерации случайного числа из диапазона
 const getRandomInteger = (a = 0, b = 1) => {
   const lower = Math.ceil(Math.min(a, b));
@@ -386,26 +469,42 @@ const humanizeTaskDueDate = (dueDate) => {
 /*!***************************!*\
   !*** ./src/view/board.js ***!
   \***************************/
-/*! exports provided: createBoardTemplate */
+/*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "createBoardTemplate", function() { return createBoardTemplate; });
-// Функция создания шаблона контейнера с фильтрами
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return Board; });
+/* harmony import */ var _utils__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../utils */ "./src/utils.js");
+
+
 const createBoardTemplate = () => {
   return (
-    `<section class="board container">
-      <div class="board__filter-list">
-        <a href="#" class="board__filter">SORT BY DEFAULT</a>
-        <a href="#" class="board__filter">SORT BY DATE up</a>
-        <a href="#" class="board__filter">SORT BY DATE down</a>
-      </div>
-
-      <div class="board__tasks"></div>
-    </section>`
+    `<section class="board container"></section>`
   );
 };
+
+class Board {
+  constructor() {
+    this._element = null;
+  }
+
+  getTemplate() {
+    return createBoardTemplate();
+  }
+
+  getElement() {
+    if (!this._element) {
+      this._element = Object(_utils__WEBPACK_IMPORTED_MODULE_0__["createElement"])(this.getTemplate());
+    }
+
+    return this._element;
+  }
+
+  removeElement() {
+    this._element = null;
+  }
+}
 
 
 /***/ }),
@@ -414,13 +513,15 @@ const createBoardTemplate = () => {
 /*!****************************!*\
   !*** ./src/view/filter.js ***!
   \****************************/
-/*! exports provided: createFilterTemplate */
+/*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "createFilterTemplate", function() { return createFilterTemplate; });
-// Функция создания шаблона фильтра
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return Filter; });
+/* harmony import */ var _utils__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../utils */ "./src/utils.js");
+
+
 const createFilterItemTemplate = (filter, isChecked) => {
   const {name, count} = filter;
 
@@ -452,6 +553,29 @@ const createFilterTemplate = (filterItems) => {
   );
 };
 
+class Filter {
+  constructor(filters) {
+    this._filters = filters;
+    this._element = null;
+  }
+
+  getTemplate() {
+    return createFilterTemplate(this._filters);
+  }
+
+  getElement() {
+    if (!this._element) {
+      this._element = Object(_utils__WEBPACK_IMPORTED_MODULE_0__["createElement"])(this.getTemplate());
+    }
+
+    return this._element;
+  }
+
+  removeElement() {
+    this._element = null;
+  }
+}
+
 
 /***/ }),
 
@@ -459,18 +583,88 @@ const createFilterTemplate = (filterItems) => {
 /*!**************************************!*\
   !*** ./src/view/load-more-button.js ***!
   \**************************************/
-/*! exports provided: createLoadMoreButtonTemplate */
+/*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "createLoadMoreButtonTemplate", function() { return createLoadMoreButtonTemplate; });
-// Функция создания шаблона кнопки "Load More"
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return LoadMoreButton; });
+/* harmony import */ var _utils__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../utils */ "./src/utils.js");
+
+
 const createLoadMoreButtonTemplate = () => {
   return (
     `<button class="load-more" type="button">load more</button>`
   );
 };
+
+class LoadMoreButton {
+  constructor() {
+    this._element = null;
+  }
+
+  getTemplate() {
+    return createLoadMoreButtonTemplate();
+  }
+
+  getElement() {
+    if (!this._element) {
+      this._element = Object(_utils__WEBPACK_IMPORTED_MODULE_0__["createElement"])(this.getTemplate());
+    }
+
+    return this._element;
+  }
+
+  removeElement() {
+    this._element = null;
+  }
+}
+
+
+/***/ }),
+
+/***/ "./src/view/no-task.js":
+/*!*****************************!*\
+  !*** ./src/view/no-task.js ***!
+  \*****************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return NoTask; });
+/* harmony import */ var _utils__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../utils */ "./src/utils.js");
+
+
+const createNoTaskTemplate = () => {
+  return (
+    `<p class="board__no-tasks">
+      Click «ADD NEW TASK» in menu to create your first task
+    </p>`
+  );
+};
+
+class NoTask {
+  constructor() {
+    this._element = null;
+  }
+
+  getTemplate() {
+    return createNoTaskTemplate();
+  }
+
+  getElement() {
+    if (!this._element) {
+      this._element = Object(_utils__WEBPACK_IMPORTED_MODULE_0__["createElement"])(this.getTemplate());
+    }
+
+    return this._element;
+  }
+
+  removeElement() {
+    this._element = null;
+  }
+}
 
 
 /***/ }),
@@ -479,12 +673,15 @@ const createLoadMoreButtonTemplate = () => {
 /*!*******************************!*\
   !*** ./src/view/site-menu.js ***!
   \*******************************/
-/*! exports provided: createSiteMenuTemplate */
+/*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "createSiteMenuTemplate", function() { return createSiteMenuTemplate; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return SiteMenu; });
+/* harmony import */ var _utils__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../utils */ "./src/utils.js");
+
+
 // Функция создания шаблона меню сайта
 const createSiteMenuTemplate = () => {
   return (
@@ -519,6 +716,76 @@ const createSiteMenuTemplate = () => {
   );
 };
 
+class SiteMenu {
+  constructor() {
+    this._element = null;
+  }
+
+  getTemplate() {
+    return createSiteMenuTemplate();
+  }
+
+  getElement() {
+    if (!this._element) {
+      this._element = Object(_utils__WEBPACK_IMPORTED_MODULE_0__["createElement"])(this.getTemplate());
+    }
+
+    return this._element;
+  }
+
+  removeElement() {
+    this._element = null;
+  }
+}
+
+
+/***/ }),
+
+/***/ "./src/view/sort.js":
+/*!**************************!*\
+  !*** ./src/view/sort.js ***!
+  \**************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return Sort; });
+/* harmony import */ var _utils__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../utils */ "./src/utils.js");
+
+
+const createSortTemplate = () => {
+  return (
+    `<div class="board__filter-list">
+      <a href="#" class="board__filter">SORT BY DEFAULT</a>
+      <a href="#" class="board__filter">SORT BY DATE up</a>
+      <a href="#" class="board__filter">SORT BY DATE down</a>
+    </div>`
+  );
+};
+
+class Sort {
+  constructor() {
+    this._element = null;
+  }
+
+  getTemplate() {
+    return createSortTemplate();
+  }
+
+  getElement() {
+    if (!this._element) {
+      this._element = Object(_utils__WEBPACK_IMPORTED_MODULE_0__["createElement"])(this.getTemplate());
+    }
+
+    return this._element;
+  }
+
+  removeElement() {
+    this._element = null;
+  }
+}
+
 
 /***/ }),
 
@@ -526,21 +793,38 @@ const createSiteMenuTemplate = () => {
 /*!*******************************!*\
   !*** ./src/view/task-edit.js ***!
   \*******************************/
-/*! exports provided: createEditTaskTemplate */
+/*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "createEditTaskTemplate", function() { return createEditTaskTemplate; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return TaskEdit; });
 /* harmony import */ var _utils__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../utils */ "./src/utils.js");
 /* harmony import */ var _const__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../const */ "./src/const.js");
 
 
 
+const BLANK_TASK = {
+  color: _const__WEBPACK_IMPORTED_MODULE_1__["COLORS"][0],
+  description: ``,
+  dueDate: null,
+  repeating: {
+    mo: false,
+    tu: false,
+    we: false,
+    th: false,
+    fr: false,
+    sa: false,
+    su: false,
+  },
+  isArchive: false,
+  isFavorite: false,
+};
+
 // Функция создания шаблона с выбором даты
 const createEditTaskDateTemplate = (dueDate) => {
-  return (`
-    <button class="card__date-deadline-toggle" type="button">
+  return (
+    `<button class="card__date-deadline-toggle" type="button">
       date: <span class="card__date-status">${dueDate === null ? `no` : `yes`}</span>
     </button>
 
@@ -583,8 +867,8 @@ const createEditTaskRepeatingTemplate = (repeating) => {
           `).join(``)}
           </div>
         </fieldset>`
-      : ``}
-  `);
+      : ``}`
+  );
 };
 
 // Функция создания шаблона с выбором цвета
@@ -607,21 +891,8 @@ const createEditTaskColorsTemplate = (currentColor) => {
 };
 
 // Функция создания шаблона редактирования карточки задания
-const createEditTaskTemplate = (task = {}) => {
-  const {
-    color = `black`,
-    description = ``,
-    dueDate = null,
-    repeating = {
-      mo: false,
-      tu: false,
-      we: false,
-      th: false,
-      fr: false,
-      sa: false,
-      su: false,
-    }
-  } = task;
+const createEditTaskTemplate = (task) => {
+  const {color, description, dueDate, repeating} = task;
 
   const deadlineClassName = Object(_utils__WEBPACK_IMPORTED_MODULE_0__["isTaskExpired"])(dueDate)
     ? `card--deadline`
@@ -681,6 +952,71 @@ const createEditTaskTemplate = (task = {}) => {
   );
 };
 
+class TaskEdit {
+  constructor(task) {
+    this._task = task || BLANK_TASK;
+    this._element = null;
+  }
+
+  getTemplate() {
+    return createEditTaskTemplate(this._task);
+  }
+
+  getElement() {
+    if (!this._element) {
+      this._element = Object(_utils__WEBPACK_IMPORTED_MODULE_0__["createElement"])(this.getTemplate());
+    }
+
+    return this._element;
+  }
+
+  removeElement() {
+    this._element = null;
+  }
+}
+
+
+/***/ }),
+
+/***/ "./src/view/task-list.js":
+/*!*******************************!*\
+  !*** ./src/view/task-list.js ***!
+  \*******************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return TaskList; });
+/* harmony import */ var _utils__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../utils */ "./src/utils.js");
+
+
+const createTaskListTemplate = () => {
+  return `<div class="board__tasks"></div>`;
+};
+
+class TaskList {
+  constructor() {
+    this._element = null;
+  }
+
+  getTemplate() {
+    return createTaskListTemplate();
+  }
+
+  getElement() {
+    if (!this._element) {
+      this._element = Object(_utils__WEBPACK_IMPORTED_MODULE_0__["createElement"])(this.getTemplate());
+    }
+
+    return this._element;
+  }
+
+  removeElement() {
+    this._element = null;
+  }
+}
+
 
 /***/ }),
 
@@ -688,12 +1024,12 @@ const createEditTaskTemplate = (task = {}) => {
 /*!**************************!*\
   !*** ./src/view/task.js ***!
   \**************************/
-/*! exports provided: createTaskCardTemplate */
+/*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "createTaskCardTemplate", function() { return createTaskCardTemplate; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return Task; });
 /* harmony import */ var _utils__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../utils */ "./src/utils.js");
 
 
@@ -766,6 +1102,29 @@ const createTaskCardTemplate = (task) => {
     </article>`
   );
 };
+
+class Task {
+  constructor(task) {
+    this._task = task;
+    this._element = null;
+  }
+
+  getTemplate() {
+    return createTaskCardTemplate(this._task);
+  }
+
+  getElement() {
+    if (!this._element) {
+      this._element = Object(_utils__WEBPACK_IMPORTED_MODULE_0__["createElement"])(this.getTemplate());
+    }
+
+    return this._element;
+  }
+
+  removeElement() {
+    this._element = null;
+  }
+}
 
 
 /***/ })
