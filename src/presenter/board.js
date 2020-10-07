@@ -6,6 +6,8 @@ import TaskEditView from '../view/task-edit';
 import TaskView from '../view/task';
 import LoadMoreButtonView from '../view/load-more-button';
 import {render, replace, remove, RenderPosition} from '../utils/render';
+import {SortType} from '../const';
+import {sortTasksDown, sortTasksUp} from '../utils/task';
 
 const TASK_AMOUNT_PER_STEP = 8;
 
@@ -26,6 +28,7 @@ export default class Board {
 
   init(boardTasks) {
     this._boardTasks = boardTasks.slice();
+    this._sourcedBoardTasks = boardTasks.slice();
 
     render(this._boardContainer, this._boardComponent, RenderPosition.BEFOREEND);
     render(this._boardComponent, this._taskListComponent, RenderPosition.BEFOREEND);
@@ -33,8 +36,29 @@ export default class Board {
     this._renderBoard();
   }
 
-  _handleSortTypeChange(sortType) {
+  _sortTasks(sortType) {
+    switch (sortType) {
+      case SortType.DATE_UP:
+        this._boardTasks.sort(sortTasksUp);
+        break;
+      case SortType.DATE_DOWN:
+        this._boardTasks.sort(sortTasksDown);
+        break;
+      default:
+        this._boardTasks = this._sourcedBoardTasks.slice();
+    }
 
+    this._currentSortType = sortType;
+  }
+
+  _handleSortTypeChange(sortType) {
+    if (this._currentSortType === sortType) {
+      return;
+    }
+
+    this._sortTasks(sortType);
+    this._clearTaskList();
+    this._renderTaskList();
   }
 
   _renderSort() {
@@ -98,6 +122,11 @@ export default class Board {
     render(this._boardComponent, this._loadMoreButtonComponent, RenderPosition.BEFOREEND);
 
     this._loadMoreButtonComponent.setClickHandler(this._handleLoadMoreButtonClick);
+  }
+
+  _clearTaskList() {
+    this._taskListComponent.getElement().innerHTML = ``;
+    this._renderedTasksCount = TASK_AMOUNT_PER_STEP;
   }
 
   _renderTaskList() {
