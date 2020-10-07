@@ -1,4 +1,5 @@
-import {isTaskExpired, isTaskRepeating, humanizeTaskDueDate, createElement} from '../utils';
+import AbstractView from './abstract';
+import {isTaskExpired, isTaskRepeating, humanizeTaskDueDate} from '../utils';
 
 // Функция создания шаблона карточки задания
 const createTaskCardTemplate = (task) => {
@@ -70,25 +71,14 @@ const createTaskCardTemplate = (task) => {
   );
 };
 
-export default class Task {
+export default class Task extends AbstractView {
   constructor(task) {
+    super();
+
     this._task = task;
-    this._element = null;
   }
 
   getTemplate() {
     return createTaskCardTemplate(this._task);
-  }
-
-  getElement() {
-    if (!this._element) {
-      this._element = createElement(this.getTemplate());
-    }
-
-    return this._element;
-  }
-
-  removeElement() {
-    this._element = null;
   }
 }
