@@ -1,4 +1,4 @@
-import {isTaskExpired, isTaskRepeating, isTaskExpiringToday} from '../utils';
+import {isTaskExpired, isTaskRepeating, isTaskExpiringToday} from '../utils/task';
 
 // Мапа где ключи - названия фильтров, а значения - функции-счетчики
 const taskToFilterMap = {

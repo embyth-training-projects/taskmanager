@@ -1,5 +1,5 @@
 import AbstractView from './abstract';
-import {isTaskExpired, isTaskRepeating, humanizeTaskDueDate} from '../utils';
+import {isTaskExpired, isTaskRepeating, humanizeTaskDueDate} from '../utils/task';
 
 // Функция создания шаблона карточки задания
 const createTaskCardTemplate = (task) => {
