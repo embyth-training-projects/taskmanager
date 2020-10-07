@@ -5,7 +5,7 @@ import NoTaskView from './view/no-task';
 import TaskEditView from './view/task-edit';
 import TaskView from './view/task';
 import LoadMoreButtonView from './view/load-more-button';
-import {render, replace, RenderPosition} from './utils/render';
+import {render, replace, remove, RenderPosition} from './utils/render';
 
 const TASK_AMOUNT_PER_STEP = 8;
 
@@ -76,7 +76,22 @@ export default class Board {
   }
 
   _renderLoadMoreButton() {
+    let renderedTasksCount = TASK_AMOUNT_PER_STEP;
 
+    const loadMoreButtonComponent = new LoadMoreButtonView();
+    render(this._boardComponent, loadMoreButtonComponent, RenderPosition.BEFOREEND);
+
+    loadMoreButtonComponent.setClickHandler(() => {
+      this._boardTasks
+        .slice(renderedTasksCount, renderedTasksCount + TASK_AMOUNT_PER_STEP)
+        .forEach((task) => this._renderTask(task));
+
+      renderedTasksCount += TASK_AMOUNT_PER_STEP;
+
+      if (renderedTasksCount >= this._boardTasks.length) {
+        remove(loadMoreButtonComponent);
+      }
+    });
   }
 
   _renderBoard() {
