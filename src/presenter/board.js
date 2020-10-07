@@ -5,7 +5,7 @@ import NoTaskView from './view/no-task';
 import TaskEditView from './view/task-edit';
 import TaskView from './view/task';
 import LoadMoreButtonView from './view/load-more-button';
-import {render, RenderPosition} from './utils/render';
+import {render, replace, RenderPosition} from './utils/render';
 
 const TASK_AMOUNT_PER_STEP = 8;
 
@@ -33,7 +33,36 @@ export default class Board {
   }
 
   _renderTask(task) {
+    const taskComponent = new TaskView(task);
+    const taskEditComponent = new TaskEditView(task);
 
+    const replaceCardToForm = () => {
+      replace(taskEditComponent, taskComponent);
+    };
+
+    const replaceFormToCard = () => {
+      replace(taskComponent, taskEditComponent);
+    };
+
+    const onEscKeyDown = (evt) => {
+      if (evt.key === `Escape` || evt.key === `Esc`) {
+        evt.preventDefault();
+        replaceFormToCard();
+        document.removeEventListener(`keydown`, onEscKeyDown);
+      }
+    };
+
+    taskComponent.setEditClickHandler(() => {
+      replaceCardToForm();
+      document.addEventListener(`keydown`, onEscKeyDown);
+    });
+
+    taskEditComponent.setFormSubmitHandler(() => {
+      replaceFormToCard();
+      document.removeEventListener(`keydown`, onEscKeyDown);
+    });
+
+    render(this._taskListComponent, taskComponent, RenderPosition.BEFOREEND);
   }
 
   _renderTasks(from, to) {
