@@ -90,14 +90,21 @@
 /*!**********************!*\
   !*** ./src/const.js ***!
   \**********************/
-/*! exports provided: COLORS */
+/*! exports provided: COLORS, SortType */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "COLORS", function() { return COLORS; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "SortType", function() { return SortType; });
 // Цвета заложеные в проект
 const COLORS = [`black`, `yellow`, `blue`, `green`, `pink`];
+
+const SortType = {
+  DEFAULT: `default`,
+  DATE_DOWN: `date-down`,
+  DATE_UP: `date-up`,
+};
 
 
 /***/ }),
@@ -113,22 +120,10 @@ const COLORS = [`black`, `yellow`, `blue`, `green`, `pink`];
 __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _view_site_menu__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./view/site-menu */ "./src/view/site-menu.js");
 /* harmony import */ var _view_filter__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./view/filter */ "./src/view/filter.js");
-/* harmony import */ var _view_board__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./view/board */ "./src/view/board.js");
-/* harmony import */ var _view_sort__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./view/sort */ "./src/view/sort.js");
-/* harmony import */ var _view_task_list__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./view/task-list */ "./src/view/task-list.js");
-/* harmony import */ var _view_task_edit__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./view/task-edit */ "./src/view/task-edit.js");
-/* harmony import */ var _view_task__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./view/task */ "./src/view/task.js");
-/* harmony import */ var _view_no_task__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./view/no-task */ "./src/view/no-task.js");
-/* harmony import */ var _view_load_more_button__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./view/load-more-button */ "./src/view/load-more-button.js");
-/* harmony import */ var _mock_task__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./mock/task */ "./src/mock/task.js");
-/* harmony import */ var _mock_filter__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ./mock/filter */ "./src/mock/filter.js");
-/* harmony import */ var _utils__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ./utils */ "./src/utils.js");
-
-
-
-
-
-
+/* harmony import */ var _presenter_board__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./presenter/board */ "./src/presenter/board.js");
+/* harmony import */ var _mock_task__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./mock/task */ "./src/mock/task.js");
+/* harmony import */ var _mock_filter__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./mock/filter */ "./src/mock/filter.js");
+/* harmony import */ var _utils_render__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./utils/render */ "./src/utils/render.js");
 
 
 
@@ -138,92 +133,18 @@ __webpack_require__.r(__webpack_exports__);
 
 // Константа количества карточек заданий
 const TASK_AMOUNT = 22;
-const TASK_AMOUNT_PER_STEP = 8;
 
-const tasks = new Array(TASK_AMOUNT).fill().map(_mock_task__WEBPACK_IMPORTED_MODULE_9__["generateTask"]);
-const filters = Object(_mock_filter__WEBPACK_IMPORTED_MODULE_10__["generateFilter"])(tasks);
+const tasks = new Array(TASK_AMOUNT).fill().map(_mock_task__WEBPACK_IMPORTED_MODULE_3__["generateTask"]);
+const filters = Object(_mock_filter__WEBPACK_IMPORTED_MODULE_4__["generateFilter"])(tasks);
 
 const siteMainNode = document.querySelector(`.main`);
 const siteHeaderNode = siteMainNode.querySelector(`.main__control`);
 
-const renderTask = (taskListElement, task) => {
-  const taskComponent = new _view_task__WEBPACK_IMPORTED_MODULE_6__["default"](task);
-  const taskEditComponent = new _view_task_edit__WEBPACK_IMPORTED_MODULE_5__["default"](task);
+const boardPresenter = new _presenter_board__WEBPACK_IMPORTED_MODULE_2__["default"](siteMainNode);
 
-  const replaceCardToForm = () => {
-    taskListElement.replaceChild(taskEditComponent.getElement(), taskComponent.getElement());
-  };
-
-  const replaceFormToCard = () => {
-    taskListElement.replaceChild(taskComponent.getElement(), taskEditComponent.getElement());
-  };
-
-  const onEscKeyDown = (evt) => {
-    if (evt.key === `Escape` || evt.key === `Esc`) {
-      evt.preventDefault();
-      replaceFormToCard();
-      document.removeEventListener(`keydown`, onEscKeyDown);
-    }
-  };
-
-  taskComponent.getElement().querySelector(`.card__btn--edit`).addEventListener(`click`, () => {
-    replaceCardToForm();
-    document.addEventListener(`keydown`, onEscKeyDown);
-  });
-
-  taskEditComponent.getElement().querySelector(`form`).addEventListener(`submit`, (evt) => {
-    evt.preventDefault();
-    replaceFormToCard();
-    document.removeEventListener(`keydown`, onEscKeyDown);
-  });
-
-  Object(_utils__WEBPACK_IMPORTED_MODULE_11__["render"])(taskListElement, taskComponent.getElement(), _utils__WEBPACK_IMPORTED_MODULE_11__["RenderPosition"].BEFOREEND);
-};
-
-const renderBoard = (boardContainer, boardTasks) => {
-  const boardComponent = new _view_board__WEBPACK_IMPORTED_MODULE_2__["default"]();
-  const taskListComponent = new _view_task_list__WEBPACK_IMPORTED_MODULE_4__["default"]();
-
-  Object(_utils__WEBPACK_IMPORTED_MODULE_11__["render"])(boardContainer, boardComponent.getElement(), _utils__WEBPACK_IMPORTED_MODULE_11__["RenderPosition"].BEFOREEND);
-
-  if (boardTasks.every((task) => task.isArchive)) {
-    Object(_utils__WEBPACK_IMPORTED_MODULE_11__["render"])(boardComponent.getElement(), new _view_no_task__WEBPACK_IMPORTED_MODULE_7__["default"]().getElement(), _utils__WEBPACK_IMPORTED_MODULE_11__["RenderPosition"].BEFOREEND);
-    return;
-  }
-
-  Object(_utils__WEBPACK_IMPORTED_MODULE_11__["render"])(boardComponent.getElement(), new _view_sort__WEBPACK_IMPORTED_MODULE_3__["default"]().getElement(), _utils__WEBPACK_IMPORTED_MODULE_11__["RenderPosition"].AFTERBEGIN);
-  Object(_utils__WEBPACK_IMPORTED_MODULE_11__["render"])(boardComponent.getElement(), taskListComponent.getElement(), _utils__WEBPACK_IMPORTED_MODULE_11__["RenderPosition"].BEFOREEND);
-
-  boardTasks
-    .slice(0, Math.min(boardTasks.length, TASK_AMOUNT_PER_STEP))
-    .forEach((task) => renderTask(taskListComponent.getElement(), task));
-
-  if (boardTasks.length > TASK_AMOUNT_PER_STEP) {
-    let renderedTasksCount = TASK_AMOUNT_PER_STEP;
-
-    const loadMoreButtonComponent = new _view_load_more_button__WEBPACK_IMPORTED_MODULE_8__["default"]();
-    Object(_utils__WEBPACK_IMPORTED_MODULE_11__["render"])(boardComponent.getElement(), loadMoreButtonComponent.getElement(), _utils__WEBPACK_IMPORTED_MODULE_11__["RenderPosition"].BEFOREEND);
-
-    loadMoreButtonComponent.getElement().addEventListener(`click`, (evt) => {
-      evt.preventDefault();
-
-      boardTasks
-        .slice(renderedTasksCount, renderedTasksCount + TASK_AMOUNT_PER_STEP)
-        .forEach((task) => renderTask(taskListComponent.getElement(), task));
-
-      renderedTasksCount += TASK_AMOUNT_PER_STEP;
-
-      if (renderedTasksCount >= boardTasks.length) {
-        loadMoreButtonComponent.getElement().remove();
-        loadMoreButtonComponent.removeElement();
-      }
-    });
-  }
-};
-
-Object(_utils__WEBPACK_IMPORTED_MODULE_11__["render"])(siteHeaderNode, new _view_site_menu__WEBPACK_IMPORTED_MODULE_0__["default"]().getElement(), _utils__WEBPACK_IMPORTED_MODULE_11__["RenderPosition"].BEFOREEND);
-Object(_utils__WEBPACK_IMPORTED_MODULE_11__["render"])(siteMainNode, new _view_filter__WEBPACK_IMPORTED_MODULE_1__["default"](filters).getElement(), _utils__WEBPACK_IMPORTED_MODULE_11__["RenderPosition"].BEFOREEND);
-renderBoard(siteMainNode, tasks);
+Object(_utils_render__WEBPACK_IMPORTED_MODULE_5__["render"])(siteHeaderNode, new _view_site_menu__WEBPACK_IMPORTED_MODULE_0__["default"](), _utils_render__WEBPACK_IMPORTED_MODULE_5__["RenderPosition"].BEFOREEND);
+Object(_utils_render__WEBPACK_IMPORTED_MODULE_5__["render"])(siteMainNode, new _view_filter__WEBPACK_IMPORTED_MODULE_1__["default"](filters), _utils_render__WEBPACK_IMPORTED_MODULE_5__["RenderPosition"].BEFOREEND);
+boardPresenter.init(tasks);
 
 
 /***/ }),
@@ -238,7 +159,7 @@ renderBoard(siteMainNode, tasks);
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "generateFilter", function() { return generateFilter; });
-/* harmony import */ var _utils__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../utils */ "./src/utils.js");
+/* harmony import */ var _utils_task__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../utils/task */ "./src/utils/task.js");
 
 
 // Мапа где ключи - названия фильтров, а значения - функции-счетчики
@@ -246,16 +167,16 @@ const taskToFilterMap = {
   all: (tasks) => tasks.filter((task) => !task.isArchive).length,
   overdue: (tasks) => tasks
     .filter((task) => !task.isArchive)
-    .filter((task) => Object(_utils__WEBPACK_IMPORTED_MODULE_0__["isTaskExpired"])(task.dueDate)).length,
+    .filter((task) => Object(_utils_task__WEBPACK_IMPORTED_MODULE_0__["isTaskExpired"])(task.dueDate)).length,
   today: (tasks) => tasks
     .filter((task) => !task.isArchive)
-    .filter((task) => Object(_utils__WEBPACK_IMPORTED_MODULE_0__["isTaskExpiringToday"])(task.dueDate)).length,
+    .filter((task) => Object(_utils_task__WEBPACK_IMPORTED_MODULE_0__["isTaskExpiringToday"])(task.dueDate)).length,
   favorites: (tasks) => tasks
     .filter((task) => !task.isArchive)
     .filter((task) => task.isFavorite).length,
   repeating: (tasks) => tasks
     .filter((task) => !task.isArchive)
-    .filter((task) => Object(_utils__WEBPACK_IMPORTED_MODULE_0__["isTaskRepeating"])(task.repeating)).length,
+    .filter((task) => Object(_utils_task__WEBPACK_IMPORTED_MODULE_0__["isTaskRepeating"])(task.repeating)).length,
   archive: (tasks) => tasks.filter((task) => task.isArchive).length,
 };
 
@@ -282,7 +203,7 @@ const generateFilter = (tasks) => {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "generateTask", function() { return generateTask; });
-/* harmony import */ var _utils__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../utils */ "./src/utils.js");
+/* harmony import */ var _utils_common__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../utils/common */ "./src/utils/common.js");
 /* harmony import */ var _const__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../const */ "./src/const.js");
 
 
@@ -295,21 +216,21 @@ const generateDescription = () => {
     `Пройти интенсив на соточку`,
   ];
 
-  const randomIndex = Object(_utils__WEBPACK_IMPORTED_MODULE_0__["getRandomInteger"])(0, descriptions.length - 1);
+  const randomIndex = Object(_utils_common__WEBPACK_IMPORTED_MODULE_0__["getRandomInteger"])(0, descriptions.length - 1);
 
   return descriptions[randomIndex];
 };
 
 // Функция для генерации даты. По заданию это либо null, либо дата плюс-минус неделя от текущей
 const generateDate = () => {
-  const isDate = Boolean(Object(_utils__WEBPACK_IMPORTED_MODULE_0__["getRandomInteger"])(0, 1));
+  const isDate = Boolean(Object(_utils_common__WEBPACK_IMPORTED_MODULE_0__["getRandomInteger"])(0, 1));
 
   if (!isDate) {
     return null;
   }
 
   const maxDaysGap = 7;
-  const daysGap = Object(_utils__WEBPACK_IMPORTED_MODULE_0__["getRandomInteger"])(-maxDaysGap, maxDaysGap);
+  const daysGap = Object(_utils_common__WEBPACK_IMPORTED_MODULE_0__["getRandomInteger"])(-maxDaysGap, maxDaysGap);
   const currentDate = new Date();
 
   currentDate.setHours(23, 59, 59, 999);
@@ -323,9 +244,9 @@ const generateRepeatingDays = () => {
   return {
     mo: false,
     tu: false,
-    we: Boolean(Object(_utils__WEBPACK_IMPORTED_MODULE_0__["getRandomInteger"])(0, 1)),
+    we: Boolean(Object(_utils_common__WEBPACK_IMPORTED_MODULE_0__["getRandomInteger"])(0, 1)),
     th: false,
-    fr: Boolean(Object(_utils__WEBPACK_IMPORTED_MODULE_0__["getRandomInteger"])(0, 1)),
+    fr: Boolean(Object(_utils_common__WEBPACK_IMPORTED_MODULE_0__["getRandomInteger"])(0, 1)),
     sa: false,
     su: false
   };
@@ -333,7 +254,7 @@ const generateRepeatingDays = () => {
 
 // Функция-генератор случайного цвета
 const getRandomColor = () => {
-  const randomIndex = Object(_utils__WEBPACK_IMPORTED_MODULE_0__["getRandomInteger"])(0, _const__WEBPACK_IMPORTED_MODULE_1__["COLORS"].length - 1);
+  const randomIndex = Object(_utils_common__WEBPACK_IMPORTED_MODULE_0__["getRandomInteger"])(0, _const__WEBPACK_IMPORTED_MODULE_1__["COLORS"].length - 1);
 
   return _const__WEBPACK_IMPORTED_MODULE_1__["COLORS"][randomIndex];
 };
@@ -358,65 +279,197 @@ const generateTask = () => {
     dueDate,
     repeating,
     color: getRandomColor(),
-    isArchive: Boolean(Object(_utils__WEBPACK_IMPORTED_MODULE_0__["getRandomInteger"])(0, 1)),
-    isFavorite: Boolean(Object(_utils__WEBPACK_IMPORTED_MODULE_0__["getRandomInteger"])(0, 1)),
+    isArchive: Boolean(Object(_utils_common__WEBPACK_IMPORTED_MODULE_0__["getRandomInteger"])(0, 1)),
+    isFavorite: Boolean(Object(_utils_common__WEBPACK_IMPORTED_MODULE_0__["getRandomInteger"])(0, 1)),
   };
 };
 
 
 /***/ }),
 
-/***/ "./src/utils.js":
-/*!**********************!*\
-  !*** ./src/utils.js ***!
-  \**********************/
-/*! exports provided: RenderPosition, render, renderTemplate, createElement, getRandomInteger, isTaskExpired, isTaskExpiringToday, isTaskRepeating, humanizeTaskDueDate */
+/***/ "./src/presenter/board.js":
+/*!********************************!*\
+  !*** ./src/presenter/board.js ***!
+  \********************************/
+/*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "RenderPosition", function() { return RenderPosition; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "render", function() { return render; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "renderTemplate", function() { return renderTemplate; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "createElement", function() { return createElement; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "getRandomInteger", function() { return getRandomInteger; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "isTaskExpired", function() { return isTaskExpired; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "isTaskExpiringToday", function() { return isTaskExpiringToday; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "isTaskRepeating", function() { return isTaskRepeating; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "humanizeTaskDueDate", function() { return humanizeTaskDueDate; });
-const RenderPosition = {
-  AFTERBEGIN: `afterbegin`,
-  BEFOREEND: `beforeend`,
-};
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return Board; });
+/* harmony import */ var _view_board__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../view/board */ "./src/view/board.js");
+/* harmony import */ var _view_sort__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../view/sort */ "./src/view/sort.js");
+/* harmony import */ var _view_task_list__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../view/task-list */ "./src/view/task-list.js");
+/* harmony import */ var _view_no_task__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../view/no-task */ "./src/view/no-task.js");
+/* harmony import */ var _view_task_edit__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../view/task-edit */ "./src/view/task-edit.js");
+/* harmony import */ var _view_task__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../view/task */ "./src/view/task.js");
+/* harmony import */ var _view_load_more_button__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../view/load-more-button */ "./src/view/load-more-button.js");
+/* harmony import */ var _utils_render__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../utils/render */ "./src/utils/render.js");
+/* harmony import */ var _const__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ../const */ "./src/const.js");
+/* harmony import */ var _utils_task__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ../utils/task */ "./src/utils/task.js");
 
-// Render-функцию для отрисовки элемента
-const render = (container, element, place) => {
-  switch (place) {
-    case RenderPosition.AFTERBEGIN:
-      container.prepend(element);
-      break;
-    case RenderPosition.BEFOREEND:
-      container.append(element);
-      break;
+
+
+
+
+
+
+
+
+
+
+const TASK_AMOUNT_PER_STEP = 8;
+
+class Board {
+  constructor(boardContainer) {
+    this._boardContainer = boardContainer;
+    this._renderedTasksCount = TASK_AMOUNT_PER_STEP;
+
+    this._boardComponent = new _view_board__WEBPACK_IMPORTED_MODULE_0__["default"]();
+    this._taskListComponent = new _view_task_list__WEBPACK_IMPORTED_MODULE_2__["default"]();
+    this._sortComponent = new _view_sort__WEBPACK_IMPORTED_MODULE_1__["default"]();
+    this._noTaskComponent = new _view_no_task__WEBPACK_IMPORTED_MODULE_3__["default"]();
+    this._loadMoreButtonComponent = new _view_load_more_button__WEBPACK_IMPORTED_MODULE_6__["default"]();
+
+    this._handleLoadMoreButtonClick = this._handleLoadMoreButtonClick.bind(this);
+    this._handleSortTypeChange = this._handleSortTypeChange.bind(this);
   }
-};
 
-// Функция отрисовки элемента в контейнер
-const renderTemplate = (container, element, place = `beforeend`) => {
-  container.insertAdjacentHTML(place, element);
-};
+  init(boardTasks) {
+    this._boardTasks = boardTasks.slice();
+    this._sourcedBoardTasks = boardTasks.slice();
 
-// Принцип работы прост:
-// 1. создаём пустой div-блок
-// 2. берём HTML в виде строки и вкладываем в этот div-блок, превращая в DOM-элемент
-// 3. возвращаем этот DOM-элемент
-const createElement = (template) => {
-  const newElement = document.createElement(`div`); // 1
-  newElement.innerHTML = template; // 2
+    Object(_utils_render__WEBPACK_IMPORTED_MODULE_7__["render"])(this._boardContainer, this._boardComponent, _utils_render__WEBPACK_IMPORTED_MODULE_7__["RenderPosition"].BEFOREEND);
+    Object(_utils_render__WEBPACK_IMPORTED_MODULE_7__["render"])(this._boardComponent, this._taskListComponent, _utils_render__WEBPACK_IMPORTED_MODULE_7__["RenderPosition"].BEFOREEND);
 
-  return newElement.firstChild; // 3
-};
+    this._renderBoard();
+  }
 
+  _sortTasks(sortType) {
+    switch (sortType) {
+      case _const__WEBPACK_IMPORTED_MODULE_8__["SortType"].DATE_UP:
+        this._boardTasks.sort(_utils_task__WEBPACK_IMPORTED_MODULE_9__["sortTasksUp"]);
+        break;
+      case _const__WEBPACK_IMPORTED_MODULE_8__["SortType"].DATE_DOWN:
+        this._boardTasks.sort(_utils_task__WEBPACK_IMPORTED_MODULE_9__["sortTasksDown"]);
+        break;
+      default:
+        this._boardTasks = this._sourcedBoardTasks.slice();
+    }
+
+    this._currentSortType = sortType;
+  }
+
+  _handleSortTypeChange(sortType) {
+    if (this._currentSortType === sortType) {
+      return;
+    }
+
+    this._sortTasks(sortType);
+    this._clearTaskList();
+    this._renderTaskList();
+  }
+
+  _renderSort() {
+    Object(_utils_render__WEBPACK_IMPORTED_MODULE_7__["render"])(this._boardComponent, this._sortComponent, _utils_render__WEBPACK_IMPORTED_MODULE_7__["RenderPosition"].AFTERBEGIN);
+    this._sortComponent.setSortTypeChangeHandler(this._handleSortTypeChange);
+  }
+
+  _renderTask(task) {
+    const taskComponent = new _view_task__WEBPACK_IMPORTED_MODULE_5__["default"](task);
+    const taskEditComponent = new _view_task_edit__WEBPACK_IMPORTED_MODULE_4__["default"](task);
+
+    const replaceCardToForm = () => {
+      Object(_utils_render__WEBPACK_IMPORTED_MODULE_7__["replace"])(taskEditComponent, taskComponent);
+    };
+
+    const replaceFormToCard = () => {
+      Object(_utils_render__WEBPACK_IMPORTED_MODULE_7__["replace"])(taskComponent, taskEditComponent);
+    };
+
+    const onEscKeyDown = (evt) => {
+      if (evt.key === `Escape` || evt.key === `Esc`) {
+        evt.preventDefault();
+        replaceFormToCard();
+        document.removeEventListener(`keydown`, onEscKeyDown);
+      }
+    };
+
+    taskComponent.setEditClickHandler(() => {
+      replaceCardToForm();
+      document.addEventListener(`keydown`, onEscKeyDown);
+    });
+
+    taskEditComponent.setFormSubmitHandler(() => {
+      replaceFormToCard();
+      document.removeEventListener(`keydown`, onEscKeyDown);
+    });
+
+    Object(_utils_render__WEBPACK_IMPORTED_MODULE_7__["render"])(this._taskListComponent, taskComponent, _utils_render__WEBPACK_IMPORTED_MODULE_7__["RenderPosition"].BEFOREEND);
+  }
+
+  _renderTasks(from, to) {
+    this._boardTasks
+      .slice(from, to)
+      .forEach((boardTask) => this._renderTask(boardTask));
+  }
+
+  _renderNoTasks() {
+    Object(_utils_render__WEBPACK_IMPORTED_MODULE_7__["render"])(this._boardComponent, this._noTaskComponent, _utils_render__WEBPACK_IMPORTED_MODULE_7__["RenderPosition"].AFTERBEGIN);
+  }
+
+  _handleLoadMoreButtonClick() {
+    this._renderTasks(this._renderedTasksCount, this._renderedTasksCount + TASK_AMOUNT_PER_STEP);
+    this._renderedTasksCount += TASK_AMOUNT_PER_STEP;
+
+    if (this._renderedTasksCount >= this._boardTasks.length) {
+      Object(_utils_render__WEBPACK_IMPORTED_MODULE_7__["remove"])(this._loadMoreButtonComponent);
+    }
+  }
+
+  _renderLoadMoreButton() {
+    Object(_utils_render__WEBPACK_IMPORTED_MODULE_7__["render"])(this._boardComponent, this._loadMoreButtonComponent, _utils_render__WEBPACK_IMPORTED_MODULE_7__["RenderPosition"].BEFOREEND);
+
+    this._loadMoreButtonComponent.setClickHandler(this._handleLoadMoreButtonClick);
+  }
+
+  _clearTaskList() {
+    this._taskListComponent.getElement().innerHTML = ``;
+    this._renderedTasksCount = TASK_AMOUNT_PER_STEP;
+  }
+
+  _renderTaskList() {
+    this._renderTasks(0, Math.min(this._boardTasks.length, TASK_AMOUNT_PER_STEP));
+
+    if (this._boardTasks.length > TASK_AMOUNT_PER_STEP) {
+      this._renderLoadMoreButton();
+    }
+  }
+
+  _renderBoard() {
+    if (this._boardTasks.every((task) => task.isArchive)) {
+      this._renderNoTasks();
+      return;
+    }
+
+    this._renderSort();
+    this._renderTaskList();
+  }
+}
+
+
+/***/ }),
+
+/***/ "./src/utils/common.js":
+/*!*****************************!*\
+  !*** ./src/utils/common.js ***!
+  \*****************************/
+/*! exports provided: getRandomInteger */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "getRandomInteger", function() { return getRandomInteger; });
 // Функция из интернета по генерации случайного числа из диапазона
 const getRandomInteger = (a = 0, b = 1) => {
   const lower = Math.ceil(Math.min(a, b));
@@ -425,6 +478,113 @@ const getRandomInteger = (a = 0, b = 1) => {
   return Math.floor(lower + Math.random() * (upper - lower + 1));
 };
 
+
+/***/ }),
+
+/***/ "./src/utils/render.js":
+/*!*****************************!*\
+  !*** ./src/utils/render.js ***!
+  \*****************************/
+/*! exports provided: RenderPosition, render, renderTemplate, createElement, replace, remove */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "RenderPosition", function() { return RenderPosition; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "render", function() { return render; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "renderTemplate", function() { return renderTemplate; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "createElement", function() { return createElement; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "replace", function() { return replace; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "remove", function() { return remove; });
+/* harmony import */ var _view_abstract__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../view/abstract */ "./src/view/abstract.js");
+
+
+const RenderPosition = {
+  AFTERBEGIN: `afterbegin`,
+  BEFOREEND: `beforeend`,
+};
+
+// Render-функцию для отрисовки элемента
+const render = (container, child, place) => {
+  if (container instanceof _view_abstract__WEBPACK_IMPORTED_MODULE_0__["default"]) {
+    container = container.getElement();
+  }
+
+  if (child instanceof _view_abstract__WEBPACK_IMPORTED_MODULE_0__["default"]) {
+    child = child.getElement();
+  }
+
+  switch (place) {
+    case RenderPosition.AFTERBEGIN:
+      container.prepend(child);
+      break;
+    case RenderPosition.BEFOREEND:
+      container.append(child);
+      break;
+  }
+};
+
+// Функция отрисовки элемента в контейнер
+const renderTemplate = (container, template, place = `beforeend`) => {
+  if (container instanceof _view_abstract__WEBPACK_IMPORTED_MODULE_0__["default"]) {
+    container = container.getElement();
+  }
+
+  container.insertAdjacentHTML(place, template);
+};
+
+const createElement = (template) => {
+  const newElement = document.createElement(`div`);
+  newElement.innerHTML = template;
+
+  return newElement.firstChild;
+};
+
+const replace = (newChild, oldChild) => {
+  if (oldChild instanceof _view_abstract__WEBPACK_IMPORTED_MODULE_0__["default"]) {
+    oldChild = oldChild.getElement();
+  }
+
+  if (newChild instanceof _view_abstract__WEBPACK_IMPORTED_MODULE_0__["default"]) {
+    newChild = newChild.getElement();
+  }
+
+  const parent = oldChild.parentElement;
+
+  if (parent === null || oldChild === null || newChild === null) {
+    throw new Error(`Can't replace unexisting elements`);
+  }
+
+  parent.replaceChild(newChild, oldChild);
+};
+
+const remove = (component) => {
+  if (!(component instanceof _view_abstract__WEBPACK_IMPORTED_MODULE_0__["default"])) {
+    throw new Error(`Can remove only components`);
+  }
+
+  component.getElement().remove();
+  component.removeElement();
+};
+
+
+/***/ }),
+
+/***/ "./src/utils/task.js":
+/*!***************************!*\
+  !*** ./src/utils/task.js ***!
+  \***************************/
+/*! exports provided: isTaskExpired, isTaskExpiringToday, isTaskRepeating, humanizeTaskDueDate, sortTasksUp, sortTasksDown */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "isTaskExpired", function() { return isTaskExpired; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "isTaskExpiringToday", function() { return isTaskExpiringToday; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "isTaskRepeating", function() { return isTaskRepeating; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "humanizeTaskDueDate", function() { return humanizeTaskDueDate; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "sortTasksUp", function() { return sortTasksUp; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "sortTasksDown", function() { return sortTasksDown; });
 // Функция получения текущей даты
 const getCurrentDate = () => {
   const currentDate = new Date();
@@ -462,6 +622,87 @@ const humanizeTaskDueDate = (dueDate) => {
   return dueDate.toLocaleString(`en-US`, {day: `numeric`, month: `long`});
 };
 
+// Функция помещает задачи без даты в конце списка,
+// возвращая нужный вес для колбэка sort
+const getWeightForNullDate = (dateA, dateB) => {
+  if (dateA === null && dateB === null) {
+    return 0;
+  }
+
+  if (dateA === null) {
+    return 1;
+  }
+
+  if (dateB === null) {
+    return -1;
+  }
+
+  return null;
+};
+
+const sortTasksUp = (taskA, taskB) => {
+  const weight = getWeightForNullDate(taskA.dueDate, taskB.dueDate);
+
+  if (weight !== null) {
+    return weight;
+  }
+
+  return taskA.dueDate.getTime() - taskB.dueDate.getTime();
+};
+
+const sortTasksDown = (taskA, taskB) => {
+  const weight = getWeightForNullDate(taskA.dueDate, taskB.dueDate);
+
+  if (weight !== null) {
+    return weight;
+  }
+
+  return taskB.dueDate.getTime() - taskA.dueDate.getTime();
+};
+
+
+/***/ }),
+
+/***/ "./src/view/abstract.js":
+/*!******************************!*\
+  !*** ./src/view/abstract.js ***!
+  \******************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return Abstract; });
+/* harmony import */ var _utils_render__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../utils/render */ "./src/utils/render.js");
+
+
+class Abstract {
+  constructor() {
+    if (new.target === Abstract) {
+      throw new Error(`Can't instantiate Abstract, only concrete one.`);
+    }
+
+    this._element = null;
+    this._callback = {};
+  }
+
+  getTemplate() {
+    throw new Error(`Abstract method not implemented: getTemplate`);
+  }
+
+  getElement() {
+    if (!this._element) {
+      this._element = Object(_utils_render__WEBPACK_IMPORTED_MODULE_0__["createElement"])(this.getTemplate());
+    }
+
+    return this._element;
+  }
+
+  removeElement() {
+    this._element = null;
+  }
+}
+
 
 /***/ }),
 
@@ -475,7 +716,7 @@ const humanizeTaskDueDate = (dueDate) => {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return Board; });
-/* harmony import */ var _utils__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../utils */ "./src/utils.js");
+/* harmony import */ var _abstract__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./abstract */ "./src/view/abstract.js");
 
 
 const createBoardTemplate = () => {
@@ -484,25 +725,9 @@ const createBoardTemplate = () => {
   );
 };
 
-class Board {
-  constructor() {
-    this._element = null;
-  }
-
+class Board extends _abstract__WEBPACK_IMPORTED_MODULE_0__["default"] {
   getTemplate() {
     return createBoardTemplate();
-  }
-
-  getElement() {
-    if (!this._element) {
-      this._element = Object(_utils__WEBPACK_IMPORTED_MODULE_0__["createElement"])(this.getTemplate());
-    }
-
-    return this._element;
-  }
-
-  removeElement() {
-    this._element = null;
   }
 }
 
@@ -519,7 +744,7 @@ class Board {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return Filter; });
-/* harmony import */ var _utils__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../utils */ "./src/utils.js");
+/* harmony import */ var _abstract__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./abstract */ "./src/view/abstract.js");
 
 
 const createFilterItemTemplate = (filter, isChecked) => {
@@ -553,26 +778,15 @@ const createFilterTemplate = (filterItems) => {
   );
 };
 
-class Filter {
+class Filter extends _abstract__WEBPACK_IMPORTED_MODULE_0__["default"] {
   constructor(filters) {
+    super();
+
     this._filters = filters;
-    this._element = null;
   }
 
   getTemplate() {
     return createFilterTemplate(this._filters);
-  }
-
-  getElement() {
-    if (!this._element) {
-      this._element = Object(_utils__WEBPACK_IMPORTED_MODULE_0__["createElement"])(this.getTemplate());
-    }
-
-    return this._element;
-  }
-
-  removeElement() {
-    this._element = null;
   }
 }
 
@@ -589,7 +803,7 @@ class Filter {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return LoadMoreButton; });
-/* harmony import */ var _utils__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../utils */ "./src/utils.js");
+/* harmony import */ var _abstract__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./abstract */ "./src/view/abstract.js");
 
 
 const createLoadMoreButtonTemplate = () => {
@@ -598,25 +812,25 @@ const createLoadMoreButtonTemplate = () => {
   );
 };
 
-class LoadMoreButton {
+class LoadMoreButton extends _abstract__WEBPACK_IMPORTED_MODULE_0__["default"] {
   constructor() {
-    this._element = null;
+    super();
+
+    this._clickHandler = this._clickHandler.bind(this);
   }
 
   getTemplate() {
     return createLoadMoreButtonTemplate();
   }
 
-  getElement() {
-    if (!this._element) {
-      this._element = Object(_utils__WEBPACK_IMPORTED_MODULE_0__["createElement"])(this.getTemplate());
-    }
-
-    return this._element;
+  _clickHandler(evt) {
+    evt.preventDefault();
+    this._callback.click();
   }
 
-  removeElement() {
-    this._element = null;
+  setClickHandler(callback) {
+    this._callback.click = callback;
+    this.getElement().addEventListener(`click`, this._clickHandler);
   }
 }
 
@@ -633,7 +847,7 @@ class LoadMoreButton {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return NoTask; });
-/* harmony import */ var _utils__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../utils */ "./src/utils.js");
+/* harmony import */ var _abstract__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./abstract */ "./src/view/abstract.js");
 
 
 const createNoTaskTemplate = () => {
@@ -644,25 +858,9 @@ const createNoTaskTemplate = () => {
   );
 };
 
-class NoTask {
-  constructor() {
-    this._element = null;
-  }
-
+class NoTask extends _abstract__WEBPACK_IMPORTED_MODULE_0__["default"] {
   getTemplate() {
     return createNoTaskTemplate();
-  }
-
-  getElement() {
-    if (!this._element) {
-      this._element = Object(_utils__WEBPACK_IMPORTED_MODULE_0__["createElement"])(this.getTemplate());
-    }
-
-    return this._element;
-  }
-
-  removeElement() {
-    this._element = null;
   }
 }
 
@@ -679,7 +877,7 @@ class NoTask {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return SiteMenu; });
-/* harmony import */ var _utils__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../utils */ "./src/utils.js");
+/* harmony import */ var _abstract__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./abstract */ "./src/view/abstract.js");
 
 
 // Функция создания шаблона меню сайта
@@ -716,25 +914,9 @@ const createSiteMenuTemplate = () => {
   );
 };
 
-class SiteMenu {
-  constructor() {
-    this._element = null;
-  }
-
+class SiteMenu extends _abstract__WEBPACK_IMPORTED_MODULE_0__["default"] {
   getTemplate() {
     return createSiteMenuTemplate();
-  }
-
-  getElement() {
-    if (!this._element) {
-      this._element = Object(_utils__WEBPACK_IMPORTED_MODULE_0__["createElement"])(this.getTemplate());
-    }
-
-    return this._element;
-  }
-
-  removeElement() {
-    this._element = null;
   }
 }
 
@@ -751,38 +933,44 @@ class SiteMenu {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return Sort; });
-/* harmony import */ var _utils__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../utils */ "./src/utils.js");
+/* harmony import */ var _abstract__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./abstract */ "./src/view/abstract.js");
+/* harmony import */ var _const__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../const */ "./src/const.js");
+
 
 
 const createSortTemplate = () => {
   return (
     `<div class="board__filter-list">
-      <a href="#" class="board__filter">SORT BY DEFAULT</a>
-      <a href="#" class="board__filter">SORT BY DATE up</a>
-      <a href="#" class="board__filter">SORT BY DATE down</a>
+      <a href="#" class="board__filter" data-sort-type="${_const__WEBPACK_IMPORTED_MODULE_1__["SortType"].DEFAULT}">SORT BY DEFAULT</a>
+      <a href="#" class="board__filter" data-sort-type="${_const__WEBPACK_IMPORTED_MODULE_1__["SortType"].DATE_UP}">SORT BY DATE up</a>
+      <a href="#" class="board__filter" data-sort-type="${_const__WEBPACK_IMPORTED_MODULE_1__["SortType"].DATE_DOWN}">SORT BY DATE down</a>
     </div>`
   );
 };
 
-class Sort {
+class Sort extends _abstract__WEBPACK_IMPORTED_MODULE_0__["default"] {
   constructor() {
-    this._element = null;
+    super();
+
+    this._sortTypeChangeHandler = this._sortTypeChangeHandler.bind(this);
   }
 
   getTemplate() {
     return createSortTemplate();
   }
 
-  getElement() {
-    if (!this._element) {
-      this._element = Object(_utils__WEBPACK_IMPORTED_MODULE_0__["createElement"])(this.getTemplate());
+  _sortTypeChangeHandler(evt) {
+    if (evt.target.tagName !== `A`) {
+      return;
     }
 
-    return this._element;
+    evt.preventDefault();
+    this._callback.sortTypeChange(evt.target.dataset.sortType);
   }
 
-  removeElement() {
-    this._element = null;
+  setSortTypeChangeHandler(callback) {
+    this._callback.sortTypeChange = callback;
+    this.getElement().addEventListener(`click`, this._sortTypeChangeHandler);
   }
 }
 
@@ -799,13 +987,15 @@ class Sort {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return TaskEdit; });
-/* harmony import */ var _utils__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../utils */ "./src/utils.js");
-/* harmony import */ var _const__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../const */ "./src/const.js");
+/* harmony import */ var _abstract__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./abstract */ "./src/view/abstract.js");
+/* harmony import */ var _utils_task__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../utils/task */ "./src/utils/task.js");
+/* harmony import */ var _const__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../const */ "./src/const.js");
+
 
 
 
 const BLANK_TASK = {
-  color: _const__WEBPACK_IMPORTED_MODULE_1__["COLORS"][0],
+  color: _const__WEBPACK_IMPORTED_MODULE_2__["COLORS"][0],
   description: ``,
   dueDate: null,
   repeating: {
@@ -836,7 +1026,7 @@ const createEditTaskDateTemplate = (dueDate) => {
               type="text"
               placeholder=""
               name="date"
-              value="${Object(_utils__WEBPACK_IMPORTED_MODULE_0__["humanizeTaskDueDate"])(dueDate)}"
+              value="${Object(_utils_task__WEBPACK_IMPORTED_MODULE_1__["humanizeTaskDueDate"])(dueDate)}"
             />
           </label>
         </fieldset>`
@@ -848,10 +1038,10 @@ const createEditTaskDateTemplate = (dueDate) => {
 const createEditTaskRepeatingTemplate = (repeating) => {
   return (`
     <button class="card__repeat-toggle" type="button">
-      repeat:<span class="card__repeat-status">${Object(_utils__WEBPACK_IMPORTED_MODULE_0__["isTaskRepeating"])(repeating) ? `yes` : `no`}</span>
+      repeat:<span class="card__repeat-status">${Object(_utils_task__WEBPACK_IMPORTED_MODULE_1__["isTaskRepeating"])(repeating) ? `yes` : `no`}</span>
     </button>
 
-    ${Object(_utils__WEBPACK_IMPORTED_MODULE_0__["isTaskRepeating"])(repeating)
+    ${Object(_utils_task__WEBPACK_IMPORTED_MODULE_1__["isTaskRepeating"])(repeating)
       ? `<fieldset class="card__repeat-days">
           <div class="card__repeat-days-inner">
           ${Object.entries(repeating).map(([day, repeat]) => `
@@ -873,7 +1063,7 @@ const createEditTaskRepeatingTemplate = (repeating) => {
 
 // Функция создания шаблона с выбором цвета
 const createEditTaskColorsTemplate = (currentColor) => {
-  return _const__WEBPACK_IMPORTED_MODULE_1__["COLORS"].map((color) => `
+  return _const__WEBPACK_IMPORTED_MODULE_2__["COLORS"].map((color) => `
     <input
       type="radio"
       id="color-${color}"
@@ -894,11 +1084,11 @@ const createEditTaskColorsTemplate = (currentColor) => {
 const createEditTaskTemplate = (task) => {
   const {color, description, dueDate, repeating} = task;
 
-  const deadlineClassName = Object(_utils__WEBPACK_IMPORTED_MODULE_0__["isTaskExpired"])(dueDate)
+  const deadlineClassName = Object(_utils_task__WEBPACK_IMPORTED_MODULE_1__["isTaskExpired"])(dueDate)
     ? `card--deadline`
     : ``;
 
-  const repeatingClassName = Object(_utils__WEBPACK_IMPORTED_MODULE_0__["isTaskRepeating"])(repeating)
+  const repeatingClassName = Object(_utils_task__WEBPACK_IMPORTED_MODULE_1__["isTaskRepeating"])(repeating)
     ? `card--repeat`
     : ``;
 
@@ -952,26 +1142,26 @@ const createEditTaskTemplate = (task) => {
   );
 };
 
-class TaskEdit {
+class TaskEdit extends _abstract__WEBPACK_IMPORTED_MODULE_0__["default"] {
   constructor(task) {
+    super();
+
     this._task = task || BLANK_TASK;
-    this._element = null;
+    this._formSubmitHandler = this._formSubmitHandler.bind(this);
   }
 
   getTemplate() {
     return createEditTaskTemplate(this._task);
   }
 
-  getElement() {
-    if (!this._element) {
-      this._element = Object(_utils__WEBPACK_IMPORTED_MODULE_0__["createElement"])(this.getTemplate());
-    }
-
-    return this._element;
+  _formSubmitHandler(evt) {
+    evt.preventDefault();
+    this._callback.formSubmit();
   }
 
-  removeElement() {
-    this._element = null;
+  setFormSubmitHandler(callback) {
+    this._callback.formSubmit = callback;
+    this.getElement().querySelector(`form`).addEventListener(`submit`, this._formSubmitHandler);
   }
 }
 
@@ -988,32 +1178,16 @@ class TaskEdit {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return TaskList; });
-/* harmony import */ var _utils__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../utils */ "./src/utils.js");
+/* harmony import */ var _abstract__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./abstract */ "./src/view/abstract.js");
 
 
 const createTaskListTemplate = () => {
   return `<div class="board__tasks"></div>`;
 };
 
-class TaskList {
-  constructor() {
-    this._element = null;
-  }
-
+class TaskList extends _abstract__WEBPACK_IMPORTED_MODULE_0__["default"] {
   getTemplate() {
     return createTaskListTemplate();
-  }
-
-  getElement() {
-    if (!this._element) {
-      this._element = Object(_utils__WEBPACK_IMPORTED_MODULE_0__["createElement"])(this.getTemplate());
-    }
-
-    return this._element;
-  }
-
-  removeElement() {
-    this._element = null;
   }
 }
 
@@ -1030,7 +1204,9 @@ class TaskList {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return Task; });
-/* harmony import */ var _utils__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../utils */ "./src/utils.js");
+/* harmony import */ var _abstract__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./abstract */ "./src/view/abstract.js");
+/* harmony import */ var _utils_task__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../utils/task */ "./src/utils/task.js");
+
 
 
 // Функция создания шаблона карточки задания
@@ -1038,14 +1214,14 @@ const createTaskCardTemplate = (task) => {
   const {color, description, dueDate, repeating, isArchive, isFavorite} = task;
 
   const date = dueDate !== null
-    ? Object(_utils__WEBPACK_IMPORTED_MODULE_0__["humanizeTaskDueDate"])(dueDate)
+    ? Object(_utils_task__WEBPACK_IMPORTED_MODULE_1__["humanizeTaskDueDate"])(dueDate)
     : ``;
 
-  const deadlineClassName = Object(_utils__WEBPACK_IMPORTED_MODULE_0__["isTaskExpired"])(dueDate)
+  const deadlineClassName = Object(_utils_task__WEBPACK_IMPORTED_MODULE_1__["isTaskExpired"])(dueDate)
     ? `card--deadline`
     : ``;
 
-  const repeatClassName = Object(_utils__WEBPACK_IMPORTED_MODULE_0__["isTaskRepeating"])(repeating)
+  const repeatClassName = Object(_utils_task__WEBPACK_IMPORTED_MODULE_1__["isTaskRepeating"])(repeating)
     ? `card--repeat`
     : ``;
 
@@ -1103,26 +1279,26 @@ const createTaskCardTemplate = (task) => {
   );
 };
 
-class Task {
+class Task extends _abstract__WEBPACK_IMPORTED_MODULE_0__["default"] {
   constructor(task) {
+    super();
+
     this._task = task;
-    this._element = null;
+    this._editClickHandler = this._editClickHandler.bind(this);
   }
 
   getTemplate() {
     return createTaskCardTemplate(this._task);
   }
 
-  getElement() {
-    if (!this._element) {
-      this._element = Object(_utils__WEBPACK_IMPORTED_MODULE_0__["createElement"])(this.getTemplate());
-    }
-
-    return this._element;
+  _editClickHandler(evt) {
+    evt.preventDefault();
+    this._callback.editClick();
   }
 
-  removeElement() {
-    this._element = null;
+  setEditClickHandler(callback) {
+    this._callback.editClick = callback;
+    this.getElement().querySelector(`.card__btn--edit`).addEventListener(`click`, this._editClickHandler);
   }
 }
 
