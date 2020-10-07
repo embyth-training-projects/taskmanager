@@ -15,7 +15,7 @@ export default class Board {
 
     this._boardComponent = new BoardView();
     this._taskListComponent = new TaskListView();
-    this._sortComponent = new TaskListView();
+    this._sortComponent = new SortView();
     this._noTaskComponent = new NoTaskView();
   }
 
@@ -29,19 +29,21 @@ export default class Board {
   }
 
   _renderSort() {
-
+    render(this._boardComponent, this._sortComponent, RenderPosition.AFTERBEGIN);
   }
 
-  _renderTask() {
+  _renderTask(task) {
 
   }
 
   _renderTasks(from, to) {
-
+    this._boardTasks
+      .slice(from, to)
+      .forEach((boardTask) => this._renderTask(boardTask));
   }
 
   _renderNoTasks() {
-
+    render(this._boardComponent, this._noTaskComponent, RenderPosition.AFTERBEGIN);
   }
 
   _renderLoadMoreButton() {
