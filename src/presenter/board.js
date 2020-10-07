@@ -1,11 +1,11 @@
-import BoardView from './view/board';
-import SortView from './view/sort';
-import TaskListView from './view/task-list';
-import NoTaskView from './view/no-task';
-import TaskEditView from './view/task-edit';
-import TaskView from './view/task';
-import LoadMoreButtonView from './view/load-more-button';
-import {render, replace, remove, RenderPosition} from './utils/render';
+import BoardView from '../view/board';
+import SortView from '../view/sort';
+import TaskListView from '../view/task-list';
+import NoTaskView from '../view/no-task';
+import TaskEditView from '../view/task-edit';
+import TaskView from '../view/task';
+import LoadMoreButtonView from '../view/load-more-button';
+import {render, replace, remove, RenderPosition} from '../utils/render';
 
 const TASK_AMOUNT_PER_STEP = 8;
 
