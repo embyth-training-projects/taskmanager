@@ -27,7 +27,7 @@ export default class Task {
     this._taskEditComponent.setFormSubmitHandler(this._handleFormSubmit);
 
     if (prevTaskComponent === null || prevTaskEditComponent === null) {
-      render(this._taskListComponent, this._taskComponent, RenderPosition.BEFOREEND);
+      render(this._taskListContainer, this._taskComponent, RenderPosition.BEFOREEND);
       return;
     }
 
