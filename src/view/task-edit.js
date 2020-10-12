@@ -34,7 +34,7 @@ const createEditTaskDateTemplate = (dueDate, isDueDate) => {
               type="text"
               placeholder=""
               name="date"
-              value="${humanizeTaskDueDate(dueDate)}"
+              value="${dueDate !== null ? humanizeTaskDueDate(dueDate) : ``}"
             />
           </label>
         </fieldset>`
@@ -158,6 +158,7 @@ export default class TaskEdit extends AbstractView {
     this._formSubmitHandler = this._formSubmitHandler.bind(this);
     this._dueDateTogglerHandler = this._dueDateTogglerHandler.bind(this);
     this._repeatingTogglerHandler = this._repeatingTogglerHandler.bind(this);
+    this._descriptionInputHandler = this._descriptionInputHandler.bind(this);
 
     this._setInnerHandlers();
   }
@@ -166,7 +167,7 @@ export default class TaskEdit extends AbstractView {
     return createEditTaskTemplate(this._data);
   }
 
-  updateData(update) {
+  updateData(update, justDataUpdating) {
     if (!update) {
       return;
     }
@@ -176,6 +177,10 @@ export default class TaskEdit extends AbstractView {
         this._data,
         update
     );
+
+    if (justDataUpdating) {
+      return;
+    }
 
     this.updateElement();
   }
@@ -205,6 +210,9 @@ export default class TaskEdit extends AbstractView {
     this.getElement()
       .querySelector(`.card__repeat-toggle`)
       .addEventListener(`click`, this._repeatingTogglerHandler);
+    this.getElement()
+      .querySelector(`.card__text`)
+      .addEventListener(`input`, this._descriptionInputHandler);
   }
 
   _dueDateTogglerHandler(evt) {
@@ -219,6 +227,13 @@ export default class TaskEdit extends AbstractView {
     this.updateData({
       isRepeating: !this._data.isRepeating
     });
+  }
+
+  _descriptionInputHandler(evt) {
+    evt.preventDefault();
+    this.updateData({
+      description: evt.target.value
+    }, true);
   }
 
   _formSubmitHandler(evt) {
