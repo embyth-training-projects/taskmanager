@@ -1,6 +1,9 @@
 import SmartView from './smart';
 import {isTaskExpired, isTaskRepeating, humanizeTaskDueDate} from '../utils/task';
 import {COLORS} from '../const';
+import flatpickr from 'flatpickr';
+
+import '../../node_modules/flatpickr/dist/flatpickr.min';
 
 const BLANK_TASK = {
   color: COLORS[0],
