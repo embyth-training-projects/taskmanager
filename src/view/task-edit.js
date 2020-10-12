@@ -20,13 +20,13 @@ const BLANK_TASK = {
 };
 
 // Функция создания шаблона с выбором даты
-const createEditTaskDateTemplate = (dueDate) => {
+const createEditTaskDateTemplate = (dueDate, isDueDate) => {
   return (
     `<button class="card__date-deadline-toggle" type="button">
-      date: <span class="card__date-status">${dueDate === null ? `no` : `yes`}</span>
+      date: <span class="card__date-status">${isDueDate ? `yes` : `no`}</span>
     </button>
 
-    ${dueDate !== null
+    ${isDueDate
       ? `<fieldset class="card__date-deadline">
           <label class="card__input-deadline-wrap">
             <input
@@ -43,13 +43,13 @@ const createEditTaskDateTemplate = (dueDate) => {
 };
 
 // Функция создания шаблона с выбором дня повторения
-const createEditTaskRepeatingTemplate = (repeating) => {
+const createEditTaskRepeatingTemplate = (repeating, isRepeating) => {
   return (`
     <button class="card__repeat-toggle" type="button">
-      repeat:<span class="card__repeat-status">${isTaskRepeating(repeating) ? `yes` : `no`}</span>
+      repeat:<span class="card__repeat-status">${isRepeating ? `yes` : `no`}</span>
     </button>
 
-    ${isTaskRepeating(repeating)
+    ${isRepeating
       ? `<fieldset class="card__repeat-days">
           <div class="card__repeat-days-inner">
           ${Object.entries(repeating).map(([day, repeat]) => `
@@ -89,19 +89,19 @@ const createEditTaskColorsTemplate = (currentColor) => {
 };
 
 // Функция создания шаблона редактирования карточки задания
-const createEditTaskTemplate = (task) => {
-  const {color, description, dueDate, repeating} = task;
+const createEditTaskTemplate = (data) => {
+  const {color, description, dueDate, repeating, isDueDate, isRepeating} = data;
 
   const deadlineClassName = isTaskExpired(dueDate)
     ? `card--deadline`
     : ``;
 
-  const repeatingClassName = isTaskRepeating(repeating)
+  const repeatingClassName = isRepeating
     ? `card--repeat`
     : ``;
 
-  const dateTemplate = createEditTaskDateTemplate(dueDate);
-  const repeatingTemplate = createEditTaskRepeatingTemplate(repeating);
+  const dateTemplate = createEditTaskDateTemplate(dueDate, isDueDate);
+  const repeatingTemplate = createEditTaskRepeatingTemplate(repeating, isRepeating);
   const colorsTemplate = createEditTaskColorsTemplate(color);
 
   return (
@@ -151,24 +151,60 @@ const createEditTaskTemplate = (task) => {
 };
 
 export default class TaskEdit extends AbstractView {
-  constructor(task) {
+  constructor(task = BLANK_TASK) {
     super();
 
-    this._task = task || BLANK_TASK;
+    this._data = TaskEdit.parseTaskToData(task);
     this._formSubmitHandler = this._formSubmitHandler.bind(this);
   }
 
   getTemplate() {
-    return createEditTaskTemplate(this._task);
+    return createEditTaskTemplate(this._data);
   }
 
   _formSubmitHandler(evt) {
     evt.preventDefault();
-    this._callback.formSubmit(this._task);
+    this._callback.formSubmit(TaskEdit.parseDataToTask(this._data));
   }
 
   setFormSubmitHandler(callback) {
     this._callback.formSubmit = callback;
     this.getElement().querySelector(`form`).addEventListener(`submit`, this._formSubmitHandler);
+  }
+
+  static parseTaskToData(task) {
+    return Object.assign(
+        {},
+        task,
+        {
+          isDueDate: task.dueDate !== null,
+          isRepeating: isTaskRepeating(task.repeating),
+        }
+    );
+  }
+
+  static parseDataToTask(data) {
+    data = Object.assign({}, data);
+
+    if (!data.isDueDate) {
+      data.dueDate = null;
+    }
+
+    if (!data.isRepeating) {
+      data.repeating = {
+        mo: false,
+        tu: false,
+        we: false,
+        th: false,
+        fr: false,
+        sa: false,
+        su: false
+      };
+    }
+
+    delete data.isDueDate;
+    delete data.isRepeating;
+
+    return data;
   }
 }
