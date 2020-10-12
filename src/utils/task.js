@@ -1,3 +1,5 @@
+import moment from 'moment';
+
 // Функция получения текущей даты
 const getCurrentDate = () => {
   const currentDate = new Date();
@@ -31,8 +33,12 @@ export const isTaskRepeating = (repeating) => {
 };
 
 // Функция перевода даты в понятную строку
-export const humanizeTaskDueDate = (dueDate) => {
-  return dueDate.toLocaleString(`en-US`, {day: `numeric`, month: `long`});
+export const formatTaskDueDate = (dueDate) => {
+  if (!(dueDate instanceof Date)) {
+    return ``;
+  }
+
+  return moment(dueDate).format(`D MMMM`);
 };
 
 // Функция помещает задачи без даты в конце списка,

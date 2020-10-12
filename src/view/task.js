@@ -1,13 +1,11 @@
 import AbstractView from './abstract';
-import {isTaskExpired, isTaskRepeating, humanizeTaskDueDate} from '../utils/task';
+import {isTaskExpired, isTaskRepeating, formatTaskDueDate} from '../utils/task';
 
 // Функция создания шаблона карточки задания
 const createTaskCardTemplate = (task) => {
   const {color, description, dueDate, repeating, isArchive, isFavorite} = task;
 
-  const date = dueDate !== null
-    ? humanizeTaskDueDate(dueDate)
-    : ``;
+  const date = formatTaskDueDate(dueDate);
 
   const deadlineClassName = isTaskExpired(dueDate)
     ? `card--deadline`
