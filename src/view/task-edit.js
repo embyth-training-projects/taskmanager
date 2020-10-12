@@ -167,6 +167,12 @@ export default class TaskEdit extends SmartView {
     this._setInnerHandlers();
   }
 
+  reset(task) {
+    this.updateData(
+        TaskEdit.parseTaskToData(task)
+    );
+  }
+
   getTemplate() {
     return createEditTaskTemplate(this._data);
   }
