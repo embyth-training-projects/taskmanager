@@ -1,5 +1,12 @@
-// Цвета заложеные в проект
-export const COLORS = [`black`, `yellow`, `blue`, `green`, `pink`];
+export const Color = {
+  BLACK: `black`,
+  YELLOW: `yellow`,
+  BLUE: `blue`,
+  GREEN: `green`,
+  PINK: `pink`,
+};
+
+export const COLORS = Object.values(Color);
 
 export const SortType = {
   DEFAULT: `default`,
