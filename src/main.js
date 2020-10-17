@@ -5,7 +5,7 @@ import BoardPresenter from './presenter/board';
 import TasksModel from './model/tasks';
 import FilterModel from './model/filter';
 import {generateTask} from './mock/task';
-import {render, RenderPosition} from './utils/render';
+import {render, remove, RenderPosition} from './utils/render';
 import {MenuItem, UpdateType, FilterType} from './const';
 
 // Константа количества карточек заданий
@@ -32,9 +32,12 @@ const handleTaskNewFormClose = () => {
   siteMenuComponent.setMenuItem(MenuItem.TASKS);
 };
 
+let statisticsComponent = null;
+
 const handleSiteMenuClick = (menuItem) => {
   switch (menuItem) {
     case MenuItem.ADD_NEW_TASK:
+      remove(statisticsComponent);
       boardPresenter.destroy();
       filterModel.setFilter(UpdateType.MAJOR, FilterType.ALL);
       boardPresenter.init();
@@ -42,10 +45,14 @@ const handleSiteMenuClick = (menuItem) => {
       siteMenuComponent.getElement().querySelector(`[value=${MenuItem.TASKS}]`).disabled = true;
       break;
     case MenuItem.TASKS:
+      remove(statisticsComponent);
       boardPresenter.init();
       break;
     case MenuItem.STATISTICS:
       boardPresenter.destroy();
+      statisticsComponent = new StatisticsView(tasksModel.getTasks());
+      render(siteMainNode, statisticsComponent, RenderPosition.BEFOREEND);
+      statisticsComponent.init();
       break;
   }
 };
@@ -53,5 +60,4 @@ const handleSiteMenuClick = (menuItem) => {
 siteMenuComponent.setMenuClickHandler(handleSiteMenuClick);
 
 filterPresenter.init();
-// boardPresenter.init();
-render(siteMainNode, new StatisticsView(tasksModel.getTasks()), RenderPosition.BEFOREEND);
+boardPresenter.init();
