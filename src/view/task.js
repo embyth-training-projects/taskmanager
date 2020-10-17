@@ -1,5 +1,6 @@
 import AbstractView from './abstract';
 import {isTaskExpired, isTaskRepeating, formatTaskDueDate} from '../utils/task';
+import he from 'he';
 
 // Функция создания шаблона карточки задания
 const createTaskCardTemplate = (task) => {
@@ -49,7 +50,7 @@ const createTaskCardTemplate = (task) => {
           </div>
 
           <div class="card__textarea-wrap">
-            <p class="card__text">${description}</p>
+            <p class="card__text">${he.encode(description)}</p>
           </div>
 
           <div class="card__settings">
