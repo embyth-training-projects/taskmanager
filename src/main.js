@@ -21,7 +21,7 @@ const siteHeaderNode = siteMainNode.querySelector(`.main__control`);
 
 render(siteHeaderNode, new SiteMenuView(), RenderPosition.BEFOREEND);
 
-const boardPresenter = new BoardPresenter(siteMainNode, tasksModel);
+const boardPresenter = new BoardPresenter(siteMainNode, filterModel, tasksModel);
 const filterPresenter = new FilterPresenter(siteMainNode, filterModel, tasksModel);
 
 filterPresenter.init();
