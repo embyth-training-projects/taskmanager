@@ -1,4 +1,5 @@
 import SiteMenuView from './view/site-menu';
+import StatisticsView from './view/statistics';
 import FilterPresenter from './presenter/filter';
 import BoardPresenter from './presenter/board';
 import TasksModel from './model/tasks';
@@ -52,4 +53,5 @@ const handleSiteMenuClick = (menuItem) => {
 siteMenuComponent.setMenuClickHandler(handleSiteMenuClick);
 
 filterPresenter.init();
-boardPresenter.init();
+// boardPresenter.init();
+render(siteMainNode, new StatisticsView(tasksModel.getTasks()), RenderPosition.BEFOREEND);
