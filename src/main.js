@@ -5,7 +5,7 @@ import TasksModel from './model/tasks';
 import FilterModel from './model/filter';
 import {generateTask} from './mock/task';
 import {render, RenderPosition} from './utils/render';
-import {MenuItem} from './const';
+import {MenuItem, UpdateType, FilterType} from './const';
 
 // Константа количества карточек заданий
 const TASK_AMOUNT = 22;
@@ -34,14 +34,17 @@ const handleTaskNewFormClose = () => {
 const handleSiteMenuClick = (menuItem) => {
   switch (menuItem) {
     case MenuItem.ADD_NEW_TASK:
+      boardPresenter.destroy();
+      filterModel.setFilter(UpdateType.MAJOR, FilterType.ALL);
+      boardPresenter.init();
       boardPresenter.createTask(handleTaskNewFormClose);
       siteMenuComponent.getElement().querySelector(`[value=${MenuItem.TASKS}]`).disabled = true;
       break;
     case MenuItem.TASKS:
-
+      boardPresenter.init();
       break;
     case MenuItem.STATISTICS:
-
+      boardPresenter.destroy();
       break;
   }
 };
