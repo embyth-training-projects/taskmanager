@@ -5,7 +5,7 @@ import NoTaskView from '../view/no-task';
 import TaskPresenter from '../presenter/task';
 import LoadMoreButtonView from '../view/load-more-button';
 import {render, remove, RenderPosition} from '../utils/render';
-import {SortType} from '../const';
+import {SortType, UserAction, UpdateType} from '../const';
 import {sortTasksDown, sortTasksUp} from '../utils/task';
 
 const TASK_AMOUNT_PER_STEP = 8;
@@ -58,11 +58,31 @@ export default class Board {
   }
 
   _handleViewAction(actionType, updateType, update) {
-    console.log(actionType, updateType, update);
+    switch (actionType) {
+      case UserAction.UPDATE_TASK:
+        this._tasksModel.updateTask(updateType, update);
+        break;
+      case UserAction.ADD_TASK:
+        this._tasksModel.addTask(updateType, update);
+        break;
+      case UserAction.DELETE_TASK:
+        this._tasksModel.deleteTask(updateType, update);
+        break;
+    }
   }
 
   _handleModelEvent(updateType, data) {
-    console.log(updateType, data);
+    switch (updateType) {
+      case UpdateType.PATCH:
+        this._taskPresenter[data.id].init(data);
+        break;
+      case UpdateType.MINOR:
+
+        break;
+      case UpdateType.MAJOR:
+
+        break;
+    }
   }
 
   _handleSortTypeChange(sortType) {
