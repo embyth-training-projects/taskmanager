@@ -3,8 +3,15 @@ import Chart from 'chart.js';
 import ChartDataLabels from 'chartjs-plugin-datalabels';
 import SmartView from './smart';
 import {getCurrentDate} from '../utils/task';
-import {countCompletedTaskInDateRange, makeItemsUniq, countTasksByColor, colorToHex} from '../utils/statistics';
-import {render} from '../utils/render';
+import {
+  countCompletedTaskInDateRange,
+  makeItemsUniq,
+  countTasksByColor,
+  colorToHex,
+  countTasksInDateRange,
+  parseChartDate,
+  getDatesInRange,
+} from '../utils/statistics';
 
 const renderColorsChart = (colorsCtx, tasks) => {
   const taskColors = tasks.map((task) => task.color);
@@ -68,13 +75,17 @@ const renderColorsChart = (colorsCtx, tasks) => {
 };
 
 const renderDaysChart = (daysCtx, tasks, dateFrom, dateTo) => {
+  const dates = getDatesInRange(dateFrom, dateTo);
+  const parsedDates = dates.map(parseChartDate);
+  const taskInDateRangeCounts = countTasksInDateRange(dates, tasks);
+
   return new Chart(daysCtx, {
     plugins: [ChartDataLabels],
     type: `line`,
     data: {
-      labels: [`3 Sep`], // Сюда нужно передать названия дней
+      labels: parsedDates,
       datasets: [{
-        data: [1], // Сюда нужно передать в том же порядке количество задач по каждому дню
+        data: taskInDateRangeCounts,
         backgroundColor: `transparent`,
         borderColor: `#000000`,
         borderWidth: 1,
@@ -150,7 +161,7 @@ const createStatisticsTemplate = (data) => {
 
           <p class="statistic__period-result">
             In total for the specified period
-            <span class="statistic__task-found">0</span> tasks were fulfilled.
+            <span class="statistic__task-found">${completedTaskCount}</span> tasks were fulfilled.
           </p>
         </div>
         <div class="statistic__line-graphic visually-hidden">
