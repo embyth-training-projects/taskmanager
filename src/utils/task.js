@@ -14,7 +14,7 @@ export const isTaskExpired = (dueDate) => {
   }
 
   const currentDate = getCurrentDate();
-  return currentDate.getTime() > dueDate.getTime();
+  return moment(currentDate).isAfter(dueDate, `day`);
 };
 
 // Функция проверки есть ли задачи на сегодня
@@ -24,7 +24,7 @@ export const isTaskExpiringToday = (dueDate) => {
   }
 
   const currentDate = getCurrentDate();
-  return currentDate.getTime() === dueDate.getTime();
+  return moment(dueDate).isSame(currentDate, `day`);
 };
 
 // Функция проверки на повторяющиеся дни в задаче
@@ -77,4 +77,12 @@ export const sortTasksDown = (taskA, taskB) => {
   }
 
   return taskB.dueDate.getTime() - taskA.dueDate.getTime();
+};
+
+export const isDatesEqual = (dateA, dateB) => {
+  if (dateA === null && dateB === null) {
+    return true;
+  }
+
+  return moment(dateA).isSame(dateB, `day`);
 };
