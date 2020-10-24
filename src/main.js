@@ -7,11 +7,18 @@ import FilterModel from './model/filter';
 import {generateTask} from './mock/task';
 import {render, remove, RenderPosition} from './utils/render';
 import {MenuItem, UpdateType, FilterType} from './const';
+import Api from './api';
 
 // Константа количества карточек заданий
 const TASK_AMOUNT = 22;
+const AUTHORIZATION = `Basic mbpooaj415n1ijbn23_`;
+const END_POINT = `https://12.ecmascript.pages.academy/task-manager`;
 
 const tasks = new Array(TASK_AMOUNT).fill().map(generateTask);
+const api = new Api(END_POINT, AUTHORIZATION);
+
+api.getTasks()
+  .then((tasks) => console.log(tasks));
 
 const tasksModel = new TasksModel();
 tasksModel.setTasks(tasks);
