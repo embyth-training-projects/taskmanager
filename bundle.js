@@ -26855,6 +26855,111 @@ module.exports = function(module) {
 
 /***/ }),
 
+/***/ "./src/api.js":
+/*!********************!*\
+  !*** ./src/api.js ***!
+  \********************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return Api; });
+/* harmony import */ var _model_tasks__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./model/tasks */ "./src/model/tasks.js");
+
+
+const Method = {
+  GET: `GET`,
+  PUT: `PUT`,
+  POST: `POST`,
+  DELETE: `DELETE`,
+};
+
+const SuccessHTTPStatusRange = {
+  MIN: 200,
+  MAX: 299
+};
+
+class Api {
+  constructor(endPoint, authorization) {
+    this._endPoint = endPoint;
+    this._authorization = authorization;
+  }
+
+  getTasks() {
+    return this._load({url: `tasks`})
+      .then(Api.toJSON)
+      .then((tasks) => tasks.map(_model_tasks__WEBPACK_IMPORTED_MODULE_0__["default"].adaptToClient));
+  }
+
+  updateTask(task) {
+    return this._load({
+      url: `tasks/${task.id}`,
+      method: Method.PUT,
+      body: JSON.stringify(_model_tasks__WEBPACK_IMPORTED_MODULE_0__["default"].adaptToServer(task)),
+      headers: new Headers({"Content-Type": `application/json`})
+    })
+      .then(Api.toJSON)
+      .then(_model_tasks__WEBPACK_IMPORTED_MODULE_0__["default"].adaptToClient);
+  }
+
+  addTask(task) {
+    return this._load({
+      url: `tasks`,
+      method: Method.POST,
+      body: JSON.stringify(_model_tasks__WEBPACK_IMPORTED_MODULE_0__["default"].adaptToServer(task)),
+      headers: new Headers({"Content-Type": `application/json`})
+    })
+      .then(Api.toJSON)
+      .then(_model_tasks__WEBPACK_IMPORTED_MODULE_0__["default"].adaptToClient);
+  }
+
+  deleteTask(task) {
+    return this._load({
+      url: `tasks/${task.id}`,
+      method: Method.DELETE
+    });
+  }
+
+  _load({
+    url,
+    method = Method.GET,
+    body = null,
+    headers = new Headers()
+  }) {
+    headers.append(`Authorization`, this._authorization);
+
+    return fetch(
+        `${this._endPoint}/${url}`,
+        {method, body, headers}
+    )
+      .then(Api.checkStatus)
+      .catch(Api.catchError);
+  }
+
+  static checkStatus(response) {
+    if (
+      response.status < SuccessHTTPStatusRange.MIN &&
+      response.status > SuccessHTTPStatusRange.MAX
+    ) {
+      throw new Error(`${response.status}: ${response.statusText}`);
+    }
+
+    return response;
+  }
+
+  static toJSON(response) {
+    return response.json();
+  }
+
+  static catchError(error) {
+    throw error;
+  }
+}
+
+
+/***/ }),
+
 /***/ "./src/const.js":
 /*!**********************!*\
   !*** ./src/const.js ***!
@@ -26897,6 +27002,7 @@ const UpdateType = {
   PATCH: `PATCH`,
   MINOR: `MINOR`,
   MAJOR: `MAJOR`,
+  INIT: `INIT`,
 };
 
 const FilterType = {
@@ -26932,9 +27038,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _presenter_board__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./presenter/board */ "./src/presenter/board.js");
 /* harmony import */ var _model_tasks__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./model/tasks */ "./src/model/tasks.js");
 /* harmony import */ var _model_filter__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./model/filter */ "./src/model/filter.js");
-/* harmony import */ var _mock_task__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./mock/task */ "./src/mock/task.js");
-/* harmony import */ var _utils_render__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./utils/render */ "./src/utils/render.js");
-/* harmony import */ var _const__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./const */ "./src/const.js");
+/* harmony import */ var _utils_render__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./utils/render */ "./src/utils/render.js");
+/* harmony import */ var _const__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./const */ "./src/const.js");
+/* harmony import */ var _api__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./api */ "./src/api.js");
 
 
 
@@ -26945,161 +27051,65 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
-// Константа количества карточек заданий
-const TASK_AMOUNT = 22;
-
-const tasks = new Array(TASK_AMOUNT).fill().map(_mock_task__WEBPACK_IMPORTED_MODULE_6__["generateTask"]);
-
-const tasksModel = new _model_tasks__WEBPACK_IMPORTED_MODULE_4__["default"]();
-tasksModel.setTasks(tasks);
-
-const filterModel = new _model_filter__WEBPACK_IMPORTED_MODULE_5__["default"]();
+const AUTHORIZATION = `Basic mbpooaj415n1ijbn23_`;
+const END_POINT = `https://12.ecmascript.pages.academy/task-manager`;
 
 const siteMainNode = document.querySelector(`.main`);
 const siteHeaderNode = siteMainNode.querySelector(`.main__control`);
+
+const api = new _api__WEBPACK_IMPORTED_MODULE_8__["default"](END_POINT, AUTHORIZATION);
+
+const tasksModel = new _model_tasks__WEBPACK_IMPORTED_MODULE_4__["default"]();
+const filterModel = new _model_filter__WEBPACK_IMPORTED_MODULE_5__["default"]();
+
 const siteMenuComponent = new _view_site_menu__WEBPACK_IMPORTED_MODULE_0__["default"]();
-
-Object(_utils_render__WEBPACK_IMPORTED_MODULE_7__["render"])(siteHeaderNode, siteMenuComponent, _utils_render__WEBPACK_IMPORTED_MODULE_7__["RenderPosition"].BEFOREEND);
-
-const boardPresenter = new _presenter_board__WEBPACK_IMPORTED_MODULE_3__["default"](siteMainNode, filterModel, tasksModel);
+const boardPresenter = new _presenter_board__WEBPACK_IMPORTED_MODULE_3__["default"](siteMainNode, filterModel, tasksModel, api);
 const filterPresenter = new _presenter_filter__WEBPACK_IMPORTED_MODULE_2__["default"](siteMainNode, filterModel, tasksModel);
 
 const handleTaskNewFormClose = () => {
-  siteMenuComponent.getElement().querySelector(`[value=${_const__WEBPACK_IMPORTED_MODULE_8__["MenuItem"].TASKS}]`).disabled = false;
-  siteMenuComponent.setMenuItem(_const__WEBPACK_IMPORTED_MODULE_8__["MenuItem"].TASKS);
+  siteMenuComponent.getElement().querySelector(`[value=${_const__WEBPACK_IMPORTED_MODULE_7__["MenuItem"].TASKS}]`).disabled = false;
+  siteMenuComponent.setMenuItem(_const__WEBPACK_IMPORTED_MODULE_7__["MenuItem"].TASKS);
 };
 
 let statisticsComponent = null;
 
 const handleSiteMenuClick = (menuItem) => {
   switch (menuItem) {
-    case _const__WEBPACK_IMPORTED_MODULE_8__["MenuItem"].ADD_NEW_TASK:
-      Object(_utils_render__WEBPACK_IMPORTED_MODULE_7__["remove"])(statisticsComponent);
+    case _const__WEBPACK_IMPORTED_MODULE_7__["MenuItem"].ADD_NEW_TASK:
+      Object(_utils_render__WEBPACK_IMPORTED_MODULE_6__["remove"])(statisticsComponent);
       boardPresenter.destroy();
-      filterModel.setFilter(_const__WEBPACK_IMPORTED_MODULE_8__["UpdateType"].MAJOR, _const__WEBPACK_IMPORTED_MODULE_8__["FilterType"].ALL);
+      filterModel.setFilter(_const__WEBPACK_IMPORTED_MODULE_7__["UpdateType"].MAJOR, _const__WEBPACK_IMPORTED_MODULE_7__["FilterType"].ALL);
       boardPresenter.init();
       boardPresenter.createTask(handleTaskNewFormClose);
-      siteMenuComponent.getElement().querySelector(`[value=${_const__WEBPACK_IMPORTED_MODULE_8__["MenuItem"].TASKS}]`).disabled = true;
+      siteMenuComponent.getElement().querySelector(`[value=${_const__WEBPACK_IMPORTED_MODULE_7__["MenuItem"].TASKS}]`).disabled = true;
       break;
-    case _const__WEBPACK_IMPORTED_MODULE_8__["MenuItem"].TASKS:
-      Object(_utils_render__WEBPACK_IMPORTED_MODULE_7__["remove"])(statisticsComponent);
+    case _const__WEBPACK_IMPORTED_MODULE_7__["MenuItem"].TASKS:
+      Object(_utils_render__WEBPACK_IMPORTED_MODULE_6__["remove"])(statisticsComponent);
       boardPresenter.init();
       break;
-    case _const__WEBPACK_IMPORTED_MODULE_8__["MenuItem"].STATISTICS:
+    case _const__WEBPACK_IMPORTED_MODULE_7__["MenuItem"].STATISTICS:
       boardPresenter.destroy();
       statisticsComponent = new _view_statistics__WEBPACK_IMPORTED_MODULE_1__["default"](tasksModel.getTasks());
-      Object(_utils_render__WEBPACK_IMPORTED_MODULE_7__["render"])(siteMainNode, statisticsComponent, _utils_render__WEBPACK_IMPORTED_MODULE_7__["RenderPosition"].BEFOREEND);
+      Object(_utils_render__WEBPACK_IMPORTED_MODULE_6__["render"])(siteMainNode, statisticsComponent, _utils_render__WEBPACK_IMPORTED_MODULE_6__["RenderPosition"].BEFOREEND);
       statisticsComponent.init();
       break;
   }
 };
 
-siteMenuComponent.setMenuClickHandler(handleSiteMenuClick);
-
 filterPresenter.init();
 boardPresenter.init();
 
-
-/***/ }),
-
-/***/ "./src/mock/task.js":
-/*!**************************!*\
-  !*** ./src/mock/task.js ***!
-  \**************************/
-/*! exports provided: generateId, generateTask */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "generateId", function() { return generateId; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "generateTask", function() { return generateTask; });
-/* harmony import */ var _utils_common__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../utils/common */ "./src/utils/common.js");
-/* harmony import */ var _const__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../const */ "./src/const.js");
-
-
-
-// Date.now() и Math.random() - плохие решения для генерации id
-// в "продуктовом" коде, а для моков самое то.
-// Для "продуктового" кода используйте что-то понадежнее,
-// вроде nanoid - https://github.com/ai/nanoid
-const generateId = () => Date.now() + parseInt(Math.random() * 10000, 10);
-
-// Функция генерации описания задачи случайным образом
-const generateDescription = () => {
-  const descriptions = [
-    `Изучить теорию`,
-    `Сделать домашку`,
-    `Пройти интенсив на соточку`,
-  ];
-
-  const randomIndex = Object(_utils_common__WEBPACK_IMPORTED_MODULE_0__["getRandomInteger"])(0, descriptions.length - 1);
-
-  return descriptions[randomIndex];
-};
-
-// Функция для генерации даты. По заданию это либо null, либо дата плюс-минус неделя от текущей
-const generateDate = () => {
-  const isDate = Boolean(Object(_utils_common__WEBPACK_IMPORTED_MODULE_0__["getRandomInteger"])(0, 1));
-
-  if (!isDate) {
-    return null;
-  }
-
-  const maxDaysGap = 7;
-  const daysGap = Object(_utils_common__WEBPACK_IMPORTED_MODULE_0__["getRandomInteger"])(-maxDaysGap, maxDaysGap);
-  const currentDate = new Date();
-
-  currentDate.setHours(23, 59, 59, 999);
-  currentDate.setDate(currentDate.getDate() + daysGap);
-
-  return new Date(currentDate);
-};
-
-// Функция для генерации дней повторения (будем выбирать случайно из двух)
-const generateRepeatingDays = () => {
-  return {
-    mo: false,
-    tu: false,
-    we: Boolean(Object(_utils_common__WEBPACK_IMPORTED_MODULE_0__["getRandomInteger"])(0, 1)),
-    th: false,
-    fr: Boolean(Object(_utils_common__WEBPACK_IMPORTED_MODULE_0__["getRandomInteger"])(0, 1)),
-    sa: false,
-    su: false
-  };
-};
-
-// Функция-генератор случайного цвета
-const getRandomColor = () => {
-  const randomIndex = Object(_utils_common__WEBPACK_IMPORTED_MODULE_0__["getRandomInteger"])(0, _const__WEBPACK_IMPORTED_MODULE_1__["COLORS"].length - 1);
-
-  return _const__WEBPACK_IMPORTED_MODULE_1__["COLORS"][randomIndex];
-};
-
-// Функция-генератор карточки задания
-const generateTask = () => {
-  const dueDate = generateDate();
-  const repeating = dueDate === null
-    ? generateRepeatingDays()
-    : {
-      mo: false,
-      tu: false,
-      we: false,
-      th: false,
-      fr: false,
-      sa: false,
-      su: false
-    };
-
-  return {
-    id: generateId(),
-    description: generateDescription(),
-    dueDate,
-    repeating,
-    color: getRandomColor(),
-    isArchive: Boolean(Object(_utils_common__WEBPACK_IMPORTED_MODULE_0__["getRandomInteger"])(0, 1)),
-    isFavorite: Boolean(Object(_utils_common__WEBPACK_IMPORTED_MODULE_0__["getRandomInteger"])(0, 1)),
-  };
-};
+api.getTasks()
+  .then((tasks) => {
+    tasksModel.setTasks(_const__WEBPACK_IMPORTED_MODULE_7__["UpdateType"].INIT, tasks);
+    Object(_utils_render__WEBPACK_IMPORTED_MODULE_6__["render"])(siteHeaderNode, siteMenuComponent, _utils_render__WEBPACK_IMPORTED_MODULE_6__["RenderPosition"].BEFOREEND);
+    siteMenuComponent.setMenuClickHandler(handleSiteMenuClick);
+  })
+  .catch(() => {
+    tasksModel.setTasks(_const__WEBPACK_IMPORTED_MODULE_7__["UpdateType"].INIT, []);
+    Object(_utils_render__WEBPACK_IMPORTED_MODULE_6__["render"])(siteHeaderNode, siteMenuComponent, _utils_render__WEBPACK_IMPORTED_MODULE_6__["RenderPosition"].BEFOREEND);
+    siteMenuComponent.setMenuClickHandler(handleSiteMenuClick);
+  });
 
 
 /***/ }),
@@ -27159,8 +27169,10 @@ class Tasks extends _utils_observer__WEBPACK_IMPORTED_MODULE_0__["default"] {
     this._tasks = [];
   }
 
-  setTasks(tasks) {
+  setTasks(updateType, tasks) {
     this._tasks = tasks.slice();
+
+    this._notify(updateType);
   }
 
   getTasks() {
@@ -27206,6 +27218,46 @@ class Tasks extends _utils_observer__WEBPACK_IMPORTED_MODULE_0__["default"] {
 
     this._notify(updateType);
   }
+
+  static adaptToClient(task) {
+    const adaptedTask = Object.assign(
+        {},
+        task,
+        {
+          dueDate: task.due_date !== null ? new Date(task.due_date) : task.due_date,
+          isArchive: task.is_archived,
+          isFavorite: task.is_favorite,
+          repeating: task.repeating_days
+        }
+    );
+
+    delete adaptedTask.due_date;
+    delete adaptedTask.is_archive;
+    delete adaptedTask.is_favorite;
+    delete adaptedTask.repeating_days;
+
+    return adaptedTask;
+  }
+
+  static adaptToServer(task) {
+    const adaptedTask = Object.assign(
+        {},
+        task,
+        {
+          "due_date": task.dueDate instanceof Date ? task.dueDate.toISOString() : null,
+          "is_archived": task.isArchive,
+          "is_favorite": task.isFavorite,
+          "repeating_days": task.repeating
+        }
+    );
+
+    delete adaptedTask.dueDate;
+    delete adaptedTask.isArchive;
+    delete adaptedTask.isFavorite;
+    delete adaptedTask.repeating;
+
+    return adaptedTask;
+  }
 }
 
 
@@ -27225,13 +27277,15 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _view_sort__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../view/sort */ "./src/view/sort.js");
 /* harmony import */ var _view_task_list__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../view/task-list */ "./src/view/task-list.js");
 /* harmony import */ var _view_no_task__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../view/no-task */ "./src/view/no-task.js");
-/* harmony import */ var _presenter_task__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../presenter/task */ "./src/presenter/task.js");
-/* harmony import */ var _presenter_task_new__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../presenter/task-new */ "./src/presenter/task-new.js");
-/* harmony import */ var _view_load_more_button__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../view/load-more-button */ "./src/view/load-more-button.js");
-/* harmony import */ var _utils_render__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../utils/render */ "./src/utils/render.js");
-/* harmony import */ var _const__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ../const */ "./src/const.js");
-/* harmony import */ var _utils_filter__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ../utils/filter */ "./src/utils/filter.js");
-/* harmony import */ var _utils_task__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ../utils/task */ "./src/utils/task.js");
+/* harmony import */ var _view_loading__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../view/loading */ "./src/view/loading.js");
+/* harmony import */ var _presenter_task__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../presenter/task */ "./src/presenter/task.js");
+/* harmony import */ var _presenter_task_new__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../presenter/task-new */ "./src/presenter/task-new.js");
+/* harmony import */ var _view_load_more_button__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../view/load-more-button */ "./src/view/load-more-button.js");
+/* harmony import */ var _utils_render__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ../utils/render */ "./src/utils/render.js");
+/* harmony import */ var _const__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ../const */ "./src/const.js");
+/* harmony import */ var _utils_filter__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ../utils/filter */ "./src/utils/filter.js");
+/* harmony import */ var _utils_task__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ../utils/task */ "./src/utils/task.js");
+
 
 
 
@@ -27247,13 +27301,15 @@ __webpack_require__.r(__webpack_exports__);
 const TASK_AMOUNT_PER_STEP = 8;
 
 class Board {
-  constructor(boardContainer, filterModel, tasksModel) {
+  constructor(boardContainer, filterModel, tasksModel, api) {
     this._boardContainer = boardContainer;
     this._tasksModel = tasksModel;
     this._filterModel = filterModel;
+    this._api = api;
     this._renderedTasksCount = TASK_AMOUNT_PER_STEP;
-    this._currentSortType = _const__WEBPACK_IMPORTED_MODULE_8__["SortType"].DEFAULT;
+    this._currentSortType = _const__WEBPACK_IMPORTED_MODULE_9__["SortType"].DEFAULT;
     this._taskPresenter = {};
+    this._isLoading = true;
 
     this._sortComponent = null;
     this._loadMoreButtonComponent = null;
@@ -27261,6 +27317,7 @@ class Board {
     this._boardComponent = new _view_board__WEBPACK_IMPORTED_MODULE_0__["default"]();
     this._taskListComponent = new _view_task_list__WEBPACK_IMPORTED_MODULE_2__["default"]();
     this._noTaskComponent = new _view_no_task__WEBPACK_IMPORTED_MODULE_3__["default"]();
+    this._loadingComponent = new _view_loading__WEBPACK_IMPORTED_MODULE_4__["default"]();
 
     this._handleLoadMoreButtonClick = this._handleLoadMoreButtonClick.bind(this);
     this._handleSortTypeChange = this._handleSortTypeChange.bind(this);
@@ -27268,12 +27325,12 @@ class Board {
     this._handleModelEvent = this._handleModelEvent.bind(this);
     this._handleModeChange = this._handleModeChange.bind(this);
 
-    this._taskNewPresenter = new _presenter_task_new__WEBPACK_IMPORTED_MODULE_5__["default"](this._taskListComponent, this._handleViewAction);
+    this._taskNewPresenter = new _presenter_task_new__WEBPACK_IMPORTED_MODULE_6__["default"](this._taskListComponent, this._handleViewAction);
   }
 
   init() {
-    Object(_utils_render__WEBPACK_IMPORTED_MODULE_7__["render"])(this._boardContainer, this._boardComponent, _utils_render__WEBPACK_IMPORTED_MODULE_7__["RenderPosition"].BEFOREEND);
-    Object(_utils_render__WEBPACK_IMPORTED_MODULE_7__["render"])(this._boardComponent, this._taskListComponent, _utils_render__WEBPACK_IMPORTED_MODULE_7__["RenderPosition"].BEFOREEND);
+    Object(_utils_render__WEBPACK_IMPORTED_MODULE_8__["render"])(this._boardContainer, this._boardComponent, _utils_render__WEBPACK_IMPORTED_MODULE_8__["RenderPosition"].BEFOREEND);
+    Object(_utils_render__WEBPACK_IMPORTED_MODULE_8__["render"])(this._boardComponent, this._taskListComponent, _utils_render__WEBPACK_IMPORTED_MODULE_8__["RenderPosition"].BEFOREEND);
 
     this._tasksModel.addObserver(this._handleModelEvent);
     this._filterModel.addObserver(this._handleModelEvent);
@@ -27284,8 +27341,8 @@ class Board {
   destroy() {
     this._clearBoard({resetRenderedTaskCount: true, resetSortType: true});
 
-    Object(_utils_render__WEBPACK_IMPORTED_MODULE_7__["remove"])(this._taskListComponent);
-    Object(_utils_render__WEBPACK_IMPORTED_MODULE_7__["remove"])(this._boardComponent);
+    Object(_utils_render__WEBPACK_IMPORTED_MODULE_8__["remove"])(this._taskListComponent);
+    Object(_utils_render__WEBPACK_IMPORTED_MODULE_8__["remove"])(this._boardComponent);
 
     this._tasksModel.removeObserver(this._handleModelEvent);
     this._filterModel.removeObserver(this._handleModelEvent);
@@ -27298,13 +27355,13 @@ class Board {
   _getTasks() {
     const filterType = this._filterModel.getFilter();
     const tasks = this._tasksModel.getTasks();
-    const filtredTasks = _utils_filter__WEBPACK_IMPORTED_MODULE_9__["filter"][filterType](tasks);
+    const filtredTasks = _utils_filter__WEBPACK_IMPORTED_MODULE_10__["filter"][filterType](tasks);
 
     switch (this._currentSortType) {
-      case _const__WEBPACK_IMPORTED_MODULE_8__["SortType"].DATE_UP:
-        return filtredTasks.sort(_utils_task__WEBPACK_IMPORTED_MODULE_10__["sortTasksUp"]);
-      case _const__WEBPACK_IMPORTED_MODULE_8__["SortType"].DATE_DOWN:
-        return filtredTasks.sort(_utils_task__WEBPACK_IMPORTED_MODULE_10__["sortTasksDown"]);
+      case _const__WEBPACK_IMPORTED_MODULE_9__["SortType"].DATE_UP:
+        return filtredTasks.sort(_utils_task__WEBPACK_IMPORTED_MODULE_11__["sortTasksUp"]);
+      case _const__WEBPACK_IMPORTED_MODULE_9__["SortType"].DATE_DOWN:
+        return filtredTasks.sort(_utils_task__WEBPACK_IMPORTED_MODULE_11__["sortTasksDown"]);
     }
 
     return filtredTasks;
@@ -27319,29 +27376,43 @@ class Board {
 
   _handleViewAction(actionType, updateType, update) {
     switch (actionType) {
-      case _const__WEBPACK_IMPORTED_MODULE_8__["UserAction"].UPDATE_TASK:
-        this._tasksModel.updateTask(updateType, update);
+      case _const__WEBPACK_IMPORTED_MODULE_9__["UserAction"].UPDATE_TASK:
+        this._taskPresenter[update.id].setViewState(_presenter_task__WEBPACK_IMPORTED_MODULE_5__["State"].SAVING);
+        this._api.updateTask(update)
+          .then((response) => this._tasksModel.updateTask(updateType, response))
+          .catch(() => this._taskPresenter[update.id].setViewState(_presenter_task__WEBPACK_IMPORTED_MODULE_5__["State"].ABORTING));
         break;
-      case _const__WEBPACK_IMPORTED_MODULE_8__["UserAction"].ADD_TASK:
-        this._tasksModel.addTask(updateType, update);
+      case _const__WEBPACK_IMPORTED_MODULE_9__["UserAction"].ADD_TASK:
+        this._taskNewPresenter.setSaving();
+        this._api.addTask(update)
+          .then((response) => this._tasksModel.addTask(updateType, response))
+          .catch(() => this._taskNewPresenter.setAborting());
         break;
-      case _const__WEBPACK_IMPORTED_MODULE_8__["UserAction"].DELETE_TASK:
-        this._tasksModel.deleteTask(updateType, update);
+      case _const__WEBPACK_IMPORTED_MODULE_9__["UserAction"].DELETE_TASK:
+        this._taskPresenter[update.id].setViewState(_presenter_task__WEBPACK_IMPORTED_MODULE_5__["State"].DELETING);
+        this._api.deleteTask(update)
+          .then(() => this._tasksModel.deleteTask(updateType, update))
+          .catch(() => this._taskPresenter[update.id].setViewState(_presenter_task__WEBPACK_IMPORTED_MODULE_5__["State"].ABORTING));
         break;
     }
   }
 
   _handleModelEvent(updateType, data) {
     switch (updateType) {
-      case _const__WEBPACK_IMPORTED_MODULE_8__["UpdateType"].PATCH:
+      case _const__WEBPACK_IMPORTED_MODULE_9__["UpdateType"].PATCH:
         this._taskPresenter[data.id].init(data);
         break;
-      case _const__WEBPACK_IMPORTED_MODULE_8__["UpdateType"].MINOR:
+      case _const__WEBPACK_IMPORTED_MODULE_9__["UpdateType"].MINOR:
         this._clearBoard();
         this._renderBoard();
         break;
-      case _const__WEBPACK_IMPORTED_MODULE_8__["UpdateType"].MAJOR:
+      case _const__WEBPACK_IMPORTED_MODULE_9__["UpdateType"].MAJOR:
         this._clearBoard({resetRenderedTaskCount: true, resetSortType: true});
+        this._renderBoard();
+        break;
+      case _const__WEBPACK_IMPORTED_MODULE_9__["UpdateType"].INIT:
+        this._isLoading = false;
+        Object(_utils_render__WEBPACK_IMPORTED_MODULE_8__["remove"])(this._loadingComponent);
         this._renderBoard();
         break;
     }
@@ -27364,11 +27435,11 @@ class Board {
 
     this._sortComponent = new _view_sort__WEBPACK_IMPORTED_MODULE_1__["default"](this._currentSortType);
     this._sortComponent.setSortTypeChangeHandler(this._handleSortTypeChange);
-    Object(_utils_render__WEBPACK_IMPORTED_MODULE_7__["render"])(this._boardComponent, this._sortComponent, _utils_render__WEBPACK_IMPORTED_MODULE_7__["RenderPosition"].AFTERBEGIN);
+    Object(_utils_render__WEBPACK_IMPORTED_MODULE_8__["render"])(this._boardComponent, this._sortComponent, _utils_render__WEBPACK_IMPORTED_MODULE_8__["RenderPosition"].AFTERBEGIN);
   }
 
   _renderTask(task) {
-    const taskPresenter = new _presenter_task__WEBPACK_IMPORTED_MODULE_4__["default"](this._taskListComponent, this._handleViewAction, this._handleModeChange);
+    const taskPresenter = new _presenter_task__WEBPACK_IMPORTED_MODULE_5__["default"](this._taskListComponent, this._handleViewAction, this._handleModeChange);
     taskPresenter.init(task);
     this._taskPresenter[task.id] = taskPresenter;
   }
@@ -27377,8 +27448,12 @@ class Board {
     tasks.forEach((task) => this._renderTask(task));
   }
 
+  _renderLoading() {
+    Object(_utils_render__WEBPACK_IMPORTED_MODULE_8__["render"])(this._boardComponent, this._loadingComponent, _utils_render__WEBPACK_IMPORTED_MODULE_8__["RenderPosition"].AFTERBEGIN);
+  }
+
   _renderNoTasks() {
-    Object(_utils_render__WEBPACK_IMPORTED_MODULE_7__["render"])(this._boardComponent, this._noTaskComponent, _utils_render__WEBPACK_IMPORTED_MODULE_7__["RenderPosition"].AFTERBEGIN);
+    Object(_utils_render__WEBPACK_IMPORTED_MODULE_8__["render"])(this._boardComponent, this._noTaskComponent, _utils_render__WEBPACK_IMPORTED_MODULE_8__["RenderPosition"].AFTERBEGIN);
   }
 
   _handleLoadMoreButtonClick() {
@@ -27390,7 +27465,7 @@ class Board {
     this._renderedTasksCount = newRenderedTaskCount;
 
     if (this._renderedTasksCount >= taskCount) {
-      Object(_utils_render__WEBPACK_IMPORTED_MODULE_7__["remove"])(this._loadMoreButtonComponent);
+      Object(_utils_render__WEBPACK_IMPORTED_MODULE_8__["remove"])(this._loadMoreButtonComponent);
     }
   }
 
@@ -27399,9 +27474,9 @@ class Board {
       this._loadMoreButtonComponent = null;
     }
 
-    this._loadMoreButtonComponent = new _view_load_more_button__WEBPACK_IMPORTED_MODULE_6__["default"]();
+    this._loadMoreButtonComponent = new _view_load_more_button__WEBPACK_IMPORTED_MODULE_7__["default"]();
     this._loadMoreButtonComponent.setClickHandler(this._handleLoadMoreButtonClick);
-    Object(_utils_render__WEBPACK_IMPORTED_MODULE_7__["render"])(this._boardComponent, this._loadMoreButtonComponent, _utils_render__WEBPACK_IMPORTED_MODULE_7__["RenderPosition"].BEFOREEND);
+    Object(_utils_render__WEBPACK_IMPORTED_MODULE_8__["render"])(this._boardComponent, this._loadMoreButtonComponent, _utils_render__WEBPACK_IMPORTED_MODULE_8__["RenderPosition"].BEFOREEND);
   }
 
   _clearBoard({resetRenderedTaskCount = false, resetSortType = false} = {}) {
@@ -27413,9 +27488,10 @@ class Board {
       .forEach((presenter) => presenter.destroy());
     this._taskPresenter = {};
 
-    Object(_utils_render__WEBPACK_IMPORTED_MODULE_7__["remove"])(this._sortComponent);
-    Object(_utils_render__WEBPACK_IMPORTED_MODULE_7__["remove"])(this._noTaskComponent);
-    Object(_utils_render__WEBPACK_IMPORTED_MODULE_7__["remove"])(this._loadMoreButtonComponent);
+    Object(_utils_render__WEBPACK_IMPORTED_MODULE_8__["remove"])(this._sortComponent);
+    Object(_utils_render__WEBPACK_IMPORTED_MODULE_8__["remove"])(this._noTaskComponent);
+    Object(_utils_render__WEBPACK_IMPORTED_MODULE_8__["remove"])(this._loadingComponent);
+    Object(_utils_render__WEBPACK_IMPORTED_MODULE_8__["remove"])(this._loadMoreButtonComponent);
 
     if (resetRenderedTaskCount) {
       this._renderedTasksCount = TASK_AMOUNT_PER_STEP;
@@ -27424,11 +27500,16 @@ class Board {
     }
 
     if (resetSortType) {
-      this._currentSortType = _const__WEBPACK_IMPORTED_MODULE_8__["SortType"].DEFAULT;
+      this._currentSortType = _const__WEBPACK_IMPORTED_MODULE_9__["SortType"].DEFAULT;
     }
   }
 
   _renderBoard() {
+    if (this._isLoading) {
+      this._renderLoading();
+      return;
+    }
+
     const tasks = this._getTasks();
     const taskCount = this._getTasks().length;
 
@@ -27567,10 +27648,8 @@ class Filter {
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return TaskNew; });
 /* harmony import */ var _view_task_edit__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../view/task-edit */ "./src/view/task-edit.js");
-/* harmony import */ var _mock_task__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../mock/task */ "./src/mock/task.js");
-/* harmony import */ var _utils_render__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../utils/render */ "./src/utils/render.js");
-/* harmony import */ var _const__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../const */ "./src/const.js");
-
+/* harmony import */ var _utils_render__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../utils/render */ "./src/utils/render.js");
+/* harmony import */ var _const__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../const */ "./src/const.js");
 
 
 
@@ -27599,7 +27678,7 @@ class TaskNew {
     this._taskEditComponent.setFormSubmitHandler(this._handleFormSubmit);
     this._taskEditComponent.setDeleteClickHandler(this._handleDeleteClick);
 
-    Object(_utils_render__WEBPACK_IMPORTED_MODULE_2__["render"])(this._taskListContainer, this._taskEditComponent, _utils_render__WEBPACK_IMPORTED_MODULE_2__["RenderPosition"].AFTERBEGIN);
+    Object(_utils_render__WEBPACK_IMPORTED_MODULE_1__["render"])(this._taskListContainer, this._taskEditComponent, _utils_render__WEBPACK_IMPORTED_MODULE_1__["RenderPosition"].AFTERBEGIN);
 
     document.addEventListener(`keydown`, this._escKeyDownHandler);
   }
@@ -27613,17 +27692,36 @@ class TaskNew {
       this._destroyCallback();
     }
 
-    Object(_utils_render__WEBPACK_IMPORTED_MODULE_2__["remove"])(this._taskEditComponent);
+    Object(_utils_render__WEBPACK_IMPORTED_MODULE_1__["remove"])(this._taskEditComponent);
     this._taskEditComponent = null;
 
     document.removeEventListener(`keydown`, this._escKeyDownHandler);
   }
 
+  setSaving() {
+    this._taskEditComponent.updateData({
+      isDisabled: true,
+      isSaving: true
+    });
+  }
+
+  setAborting() {
+    const resetFormState = () => {
+      this._taskEditComponent.updateData({
+        isDisabled: false,
+        isSaving: false,
+        isDeleting: false,
+      });
+    };
+
+    this._taskEditComponent.shake(resetFormState);
+  }
+
   _handleFormSubmit(task) {
     this._changeData(
-        _const__WEBPACK_IMPORTED_MODULE_3__["UserAction"].ADD_TASK,
-        _const__WEBPACK_IMPORTED_MODULE_3__["UpdateType"].MINOR,
-        Object.assign({id: Object(_mock_task__WEBPACK_IMPORTED_MODULE_1__["generateId"])()}, task)
+        _const__WEBPACK_IMPORTED_MODULE_2__["UserAction"].ADD_TASK,
+        _const__WEBPACK_IMPORTED_MODULE_2__["UpdateType"].MINOR,
+        task
     );
   }
 
@@ -27646,11 +27744,12 @@ class TaskNew {
 /*!*******************************!*\
   !*** ./src/presenter/task.js ***!
   \*******************************/
-/*! exports provided: default */
+/*! exports provided: State, default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "State", function() { return State; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return Task; });
 /* harmony import */ var _view_task__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../view/task */ "./src/view/task.js");
 /* harmony import */ var _view_task_edit__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../view/task-edit */ "./src/view/task-edit.js");
@@ -27666,6 +27765,12 @@ __webpack_require__.r(__webpack_exports__);
 const Mode = {
   DEFAULT: `default`,
   EDITING: `editing`
+};
+
+const State = {
+  SAVING: `SAVING`,
+  DELETING: `DELETING`,
+  ABORTING: `ABORTING`,
 };
 
 class Task {
@@ -27711,7 +27816,8 @@ class Task {
     }
 
     if (this._mode === Mode.EDITING) {
-      Object(_utils_render__WEBPACK_IMPORTED_MODULE_2__["replace"])(this._taskEditComponent, prevTaskEditComponent);
+      Object(_utils_render__WEBPACK_IMPORTED_MODULE_2__["replace"])(this._taskComponent, prevTaskEditComponent);
+      this._mode = Mode.DEFAULT;
     }
 
     Object(_utils_render__WEBPACK_IMPORTED_MODULE_2__["remove"])(prevTaskComponent);
@@ -27726,6 +27832,35 @@ class Task {
   resetView() {
     if (this._mode !== Mode.DEFAULT) {
       this._replaceFormToCard();
+    }
+  }
+
+  setViewState(state) {
+    const resetFormState = () => {
+      this._taskEditComponent.updateData({
+        isDeleting: false,
+        isDisabled: false,
+        isSaving: false,
+      });
+    };
+
+    switch (state) {
+      case State.SAVING:
+        this._taskEditComponent.updateData({
+          isDisabled: true,
+          isSaving: true
+        });
+        break;
+      case State.DELETING:
+        this._taskEditComponent.updateData({
+          isDisabled: true,
+          isDeleting: true
+        });
+        break;
+      case State.ABORTING:
+        this._taskComponent.shake(resetFormState);
+        this._taskEditComponent.shake(resetFormState);
+        break;
     }
   }
 
@@ -27792,8 +27927,6 @@ class Task {
         isMinorUpdate ? _const__WEBPACK_IMPORTED_MODULE_3__["UpdateType"].MINOR : _const__WEBPACK_IMPORTED_MODULE_3__["UpdateType"].PATCH,
         update
     );
-
-    this._replaceFormToCard();
   }
 
   _handleDeleteClick(task) {
@@ -27804,27 +27937,6 @@ class Task {
     );
   }
 }
-
-
-/***/ }),
-
-/***/ "./src/utils/common.js":
-/*!*****************************!*\
-  !*** ./src/utils/common.js ***!
-  \*****************************/
-/*! exports provided: getRandomInteger */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "getRandomInteger", function() { return getRandomInteger; });
-// Функция из интернета по генерации случайного числа из диапазона
-const getRandomInteger = (a = 0, b = 1) => {
-  const lower = Math.ceil(Math.min(a, b));
-  const upper = Math.floor(Math.max(a, b));
-
-  return Math.floor(lower + Math.random() * (upper - lower + 1));
-};
 
 
 /***/ }),
@@ -28184,6 +28296,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _utils_render__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../utils/render */ "./src/utils/render.js");
 
 
+const SHAKE_ANIMATION_TIMEOUT = 600;
+
 class Abstract {
   constructor() {
     if (new.target === Abstract) {
@@ -28208,6 +28322,14 @@ class Abstract {
 
   removeElement() {
     this._element = null;
+  }
+
+  shake(callback) {
+    this.getElement().querySelector(`.card__inner`).classList.add(`shake`);
+    setTimeout(() => {
+      this.getElement().querySelector(`.card__inner`).classList.remove(`shake`);
+      callback();
+    }, SHAKE_ANIMATION_TIMEOUT);
   }
 }
 
@@ -28353,6 +28475,36 @@ class LoadMoreButton extends _abstract__WEBPACK_IMPORTED_MODULE_0__["default"] {
   setClickHandler(callback) {
     this._callback.click = callback;
     this.getElement().addEventListener(`click`, this._clickHandler);
+  }
+}
+
+
+/***/ }),
+
+/***/ "./src/view/loading.js":
+/*!*****************************!*\
+  !*** ./src/view/loading.js ***!
+  \*****************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return Loading; });
+/* harmony import */ var _abstract__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./abstract */ "./src/view/abstract.js");
+
+
+const createLoadingTemplate = () => {
+  return (
+    `<p class="board__no-tasks">
+      Loading...
+    </p>`
+  );
+};
+
+class Loading extends _abstract__WEBPACK_IMPORTED_MODULE_0__["default"] {
+  getTemplate() {
+    return createLoadingTemplate();
   }
 }
 
@@ -28914,7 +29066,7 @@ const BLANK_TASK = {
 };
 
 // Функция создания шаблона с выбором даты
-const createEditTaskDateTemplate = (dueDate, isDueDate) => {
+const createEditTaskDateTemplate = (dueDate, isDueDate, isDisabled) => {
   return (
     `<button class="card__date-deadline-toggle" type="button">
       date: <span class="card__date-status">${isDueDate ? `yes` : `no`}</span>
@@ -28929,6 +29081,7 @@ const createEditTaskDateTemplate = (dueDate, isDueDate) => {
               placeholder=""
               name="date"
               value="${Object(_utils_task__WEBPACK_IMPORTED_MODULE_1__["formatTaskDueDate"])(dueDate)}"
+              ${isDisabled ? `disabled` : ``}
             />
           </label>
         </fieldset>`
@@ -28937,7 +29090,7 @@ const createEditTaskDateTemplate = (dueDate, isDueDate) => {
 };
 
 // Функция создания шаблона с выбором дня повторения
-const createEditTaskRepeatingTemplate = (repeating, isRepeating) => {
+const createEditTaskRepeatingTemplate = (repeating, isRepeating, isDisabled) => {
   return (`
     <button class="card__repeat-toggle" type="button">
       repeat:<span class="card__repeat-status">${isRepeating ? `yes` : `no`}</span>
@@ -28954,6 +29107,7 @@ const createEditTaskRepeatingTemplate = (repeating, isRepeating) => {
               name="repeat"
               value="${day}"
               ${repeat ? `checked` : ``}
+              ${isDisabled ? `disabled` : ``}
             />
             <label class="card__repeat-day" for="repeat-${day}">${day}</label>
           `).join(``)}
@@ -28984,14 +29138,14 @@ const createEditTaskColorsTemplate = (currentColor) => {
 
 // Функция создания шаблона редактирования карточки задания
 const createEditTaskTemplate = (data) => {
-  const {color, description, dueDate, repeating, isDueDate, isRepeating} = data;
+  const {color, description, dueDate, repeating, isDueDate, isRepeating, isDisabled, isSaving, isDeleting} = data;
 
   const repeatingClassName = isRepeating
     ? `card--repeat`
     : ``;
 
-  const dateTemplate = createEditTaskDateTemplate(dueDate, isDueDate);
-  const repeatingTemplate = createEditTaskRepeatingTemplate(repeating, isRepeating);
+  const dateTemplate = createEditTaskDateTemplate(dueDate, isDueDate, isDisabled);
+  const repeatingTemplate = createEditTaskRepeatingTemplate(repeating, isRepeating, isDisabled);
   const colorsTemplate = createEditTaskColorsTemplate(color);
 
   const isSubmitDisabled = (isDueDate && dueDate === null) || (isRepeating && !Object(_utils_task__WEBPACK_IMPORTED_MODULE_1__["isTaskRepeating"])(repeating));
@@ -29012,6 +29166,7 @@ const createEditTaskTemplate = (data) => {
                 class="card__text"
                 placeholder="Start typing your text here..."
                 name="text"
+                ${isDisabled ? `disabled` : ``}
               >${he__WEBPACK_IMPORTED_MODULE_4___default.a.encode(description)}</textarea>
             </label>
           </div>
@@ -29033,8 +29188,8 @@ const createEditTaskTemplate = (data) => {
           </div>
 
           <div class="card__status-btns">
-            <button class="card__save" type="submit" ${isSubmitDisabled ? `disabled` : ``}>save</button>
-            <button class="card__delete" type="button">delete</button>
+            <button class="card__save" type="submit" ${isSubmitDisabled || isDisabled ? `disabled` : ``}>${isSaving ? `saving...` : `save`}</button>
+            <button class="card__delete" type="button" ${isDisabled ? `disabled` : ``}>${isDeleting ? `deleting...` : `delete`}</button>
           </div>
         </div>
       </form>
@@ -29203,6 +29358,9 @@ class TaskEdit extends _smart__WEBPACK_IMPORTED_MODULE_0__["default"] {
         {
           isDueDate: task.dueDate !== null,
           isRepeating: Object(_utils_task__WEBPACK_IMPORTED_MODULE_1__["isTaskRepeating"])(task.repeating),
+          isDisabled: false,
+          isSaving: false,
+          isDeleting: false,
         }
     );
   }
@@ -29228,6 +29386,9 @@ class TaskEdit extends _smart__WEBPACK_IMPORTED_MODULE_0__["default"] {
 
     delete data.isDueDate;
     delete data.isRepeating;
+    delete data.isDisabled;
+    delete data.isSaving;
+    delete data.isDeleting;
 
     return data;
   }
