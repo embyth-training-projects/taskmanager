@@ -4,33 +4,22 @@ import FilterPresenter from './presenter/filter';
 import BoardPresenter from './presenter/board';
 import TasksModel from './model/tasks';
 import FilterModel from './model/filter';
-import {generateTask} from './mock/task';
 import {render, remove, RenderPosition} from './utils/render';
 import {MenuItem, UpdateType, FilterType} from './const';
 import Api from './api';
 
-// Константа количества карточек заданий
-const TASK_AMOUNT = 22;
 const AUTHORIZATION = `Basic mbpooaj415n1ijbn23_`;
 const END_POINT = `https://12.ecmascript.pages.academy/task-manager`;
 
-const tasks = new Array(TASK_AMOUNT).fill().map(generateTask);
-const api = new Api(END_POINT, AUTHORIZATION);
-
-api.getTasks()
-  .then((tasks) => console.log(tasks));
-
-const tasksModel = new TasksModel();
-tasksModel.setTasks(tasks);
-
-const filterModel = new FilterModel();
-
 const siteMainNode = document.querySelector(`.main`);
 const siteHeaderNode = siteMainNode.querySelector(`.main__control`);
+
+const api = new Api(END_POINT, AUTHORIZATION);
+
+const tasksModel = new TasksModel();
+const filterModel = new FilterModel();
+
 const siteMenuComponent = new SiteMenuView();
-
-render(siteHeaderNode, siteMenuComponent, RenderPosition.BEFOREEND);
-
 const boardPresenter = new BoardPresenter(siteMainNode, filterModel, tasksModel);
 const filterPresenter = new FilterPresenter(siteMainNode, filterModel, tasksModel);
 
@@ -66,5 +55,11 @@ const handleSiteMenuClick = (menuItem) => {
 
 siteMenuComponent.setMenuClickHandler(handleSiteMenuClick);
 
+render(siteHeaderNode, siteMenuComponent, RenderPosition.BEFOREEND);
 filterPresenter.init();
 boardPresenter.init();
+
+api.getTasks()
+  .then((tasks) => {
+    tasksModel.setTasks(tasks);
+  });
