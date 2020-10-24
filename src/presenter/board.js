@@ -2,6 +2,7 @@ import BoardView from '../view/board';
 import SortView from '../view/sort';
 import TaskListView from '../view/task-list';
 import NoTaskView from '../view/no-task';
+import LoadingView from '../view/loading';
 import TaskPresenter from '../presenter/task';
 import TaskNewPresenter from '../presenter/task-new';
 import LoadMoreButtonView from '../view/load-more-button';
@@ -20,6 +21,7 @@ export default class Board {
     this._renderedTasksCount = TASK_AMOUNT_PER_STEP;
     this._currentSortType = SortType.DEFAULT;
     this._taskPresenter = {};
+    this._isLoading = true;
 
     this._sortComponent = null;
     this._loadMoreButtonComponent = null;
@@ -27,6 +29,7 @@ export default class Board {
     this._boardComponent = new BoardView();
     this._taskListComponent = new TaskListView();
     this._noTaskComponent = new NoTaskView();
+    this._loadingComponent = new LoadingView();
 
     this._handleLoadMoreButtonClick = this._handleLoadMoreButtonClick.bind(this);
     this._handleSortTypeChange = this._handleSortTypeChange.bind(this);
@@ -110,6 +113,11 @@ export default class Board {
         this._clearBoard({resetRenderedTaskCount: true, resetSortType: true});
         this._renderBoard();
         break;
+      case UpdateType.INIT:
+        this._isLoading = false;
+        remove(this._loadingComponent);
+        this._renderBoard();
+        break;
     }
   }
 
@@ -141,6 +149,10 @@ export default class Board {
 
   _renderTasks(tasks) {
     tasks.forEach((task) => this._renderTask(task));
+  }
+
+  _renderLoading() {
+    render(this._boardComponent, this._loadingComponent, RenderPosition.AFTERBEGIN);
   }
 
   _renderNoTasks() {
@@ -181,6 +193,7 @@ export default class Board {
 
     remove(this._sortComponent);
     remove(this._noTaskComponent);
+    remove(this._loadingComponent);
     remove(this._loadMoreButtonComponent);
 
     if (resetRenderedTaskCount) {
@@ -195,6 +208,11 @@ export default class Board {
   }
 
   _renderBoard() {
+    if (this._isLoading) {
+      this._renderLoading();
+      return;
+    }
+
     const tasks = this._getTasks();
     const taskCount = this._getTasks().length;
 
