@@ -14,10 +14,11 @@ import {sortTasksDown, sortTasksUp} from '../utils/task';
 const TASK_AMOUNT_PER_STEP = 8;
 
 export default class Board {
-  constructor(boardContainer, filterModel, tasksModel) {
+  constructor(boardContainer, filterModel, tasksModel, api) {
     this._boardContainer = boardContainer;
     this._tasksModel = tasksModel;
     this._filterModel = filterModel;
+    this._api = api;
     this._renderedTasksCount = TASK_AMOUNT_PER_STEP;
     this._currentSortType = SortType.DEFAULT;
     this._taskPresenter = {};
@@ -89,7 +90,8 @@ export default class Board {
   _handleViewAction(actionType, updateType, update) {
     switch (actionType) {
       case UserAction.UPDATE_TASK:
-        this._tasksModel.updateTask(updateType, update);
+        this._api.updateTask(update)
+          .then((response) => this._tasksModel.updateTask(updateType, response));
         break;
       case UserAction.ADD_TASK:
         this._tasksModel.addTask(updateType, update);
