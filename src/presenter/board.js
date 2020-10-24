@@ -3,7 +3,7 @@ import SortView from '../view/sort';
 import TaskListView from '../view/task-list';
 import NoTaskView from '../view/no-task';
 import LoadingView from '../view/loading';
-import TaskPresenter from '../presenter/task';
+import TaskPresenter, {State as TaskPresenterViewState} from '../presenter/task';
 import TaskNewPresenter from '../presenter/task-new';
 import LoadMoreButtonView from '../view/load-more-button';
 import {render, remove, RenderPosition} from '../utils/render';
@@ -90,14 +90,17 @@ export default class Board {
   _handleViewAction(actionType, updateType, update) {
     switch (actionType) {
       case UserAction.UPDATE_TASK:
+        this._taskPresenter[update.id].setViewState(TaskPresenterViewState.SAVING);
         this._api.updateTask(update)
           .then((response) => this._tasksModel.updateTask(updateType, response));
         break;
       case UserAction.ADD_TASK:
+        this._taskPresenter.setSaving();
         this._api.addTask(update)
           .then((response) => this._tasksModel.addTask(updateType, response));
         break;
       case UserAction.DELETE_TASK:
+        this._taskPresenter[update.id].setViewState(TaskPresenterViewState.DELETING);
         this._api.deleteTask(update)
           .then(() => this._tasksModel.deleteTask(updateType, update));
         break;
