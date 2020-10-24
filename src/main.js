@@ -61,5 +61,8 @@ boardPresenter.init();
 
 api.getTasks()
   .then((tasks) => {
-    tasksModel.setTasks(tasks);
+    tasksModel.setTasks(UpdateType.INIT, tasks);
+  })
+  .catch(() => {
+    tasksModel.setTasks(UpdateType.INIT, []);
   });
