@@ -24,7 +24,7 @@ const BLANK_TASK = {
 };
 
 // Функция создания шаблона с выбором даты
-const createEditTaskDateTemplate = (dueDate, isDueDate) => {
+const createEditTaskDateTemplate = (dueDate, isDueDate, isDisabled) => {
   return (
     `<button class="card__date-deadline-toggle" type="button">
       date: <span class="card__date-status">${isDueDate ? `yes` : `no`}</span>
@@ -39,6 +39,7 @@ const createEditTaskDateTemplate = (dueDate, isDueDate) => {
               placeholder=""
               name="date"
               value="${formatTaskDueDate(dueDate)}"
+              ${isDisabled ? `disabled` : ``}
             />
           </label>
         </fieldset>`
@@ -47,7 +48,7 @@ const createEditTaskDateTemplate = (dueDate, isDueDate) => {
 };
 
 // Функция создания шаблона с выбором дня повторения
-const createEditTaskRepeatingTemplate = (repeating, isRepeating) => {
+const createEditTaskRepeatingTemplate = (repeating, isRepeating, isDisabled) => {
   return (`
     <button class="card__repeat-toggle" type="button">
       repeat:<span class="card__repeat-status">${isRepeating ? `yes` : `no`}</span>
@@ -64,6 +65,7 @@ const createEditTaskRepeatingTemplate = (repeating, isRepeating) => {
               name="repeat"
               value="${day}"
               ${repeat ? `checked` : ``}
+              ${isDisabled ? `disabled` : ``}
             />
             <label class="card__repeat-day" for="repeat-${day}">${day}</label>
           `).join(``)}
@@ -94,14 +96,14 @@ const createEditTaskColorsTemplate = (currentColor) => {
 
 // Функция создания шаблона редактирования карточки задания
 const createEditTaskTemplate = (data) => {
-  const {color, description, dueDate, repeating, isDueDate, isRepeating} = data;
+  const {color, description, dueDate, repeating, isDueDate, isRepeating, isDisabled, isSaving, isDeleting} = data;
 
   const repeatingClassName = isRepeating
     ? `card--repeat`
     : ``;
 
-  const dateTemplate = createEditTaskDateTemplate(dueDate, isDueDate);
-  const repeatingTemplate = createEditTaskRepeatingTemplate(repeating, isRepeating);
+  const dateTemplate = createEditTaskDateTemplate(dueDate, isDueDate, isDisabled);
+  const repeatingTemplate = createEditTaskRepeatingTemplate(repeating, isRepeating, isDisabled);
   const colorsTemplate = createEditTaskColorsTemplate(color);
 
   const isSubmitDisabled = (isDueDate && dueDate === null) || (isRepeating && !isTaskRepeating(repeating));
@@ -122,6 +124,7 @@ const createEditTaskTemplate = (data) => {
                 class="card__text"
                 placeholder="Start typing your text here..."
                 name="text"
+                ${isDisabled ? `disabled` : ``}
               >${he.encode(description)}</textarea>
             </label>
           </div>
@@ -143,8 +146,8 @@ const createEditTaskTemplate = (data) => {
           </div>
 
           <div class="card__status-btns">
-            <button class="card__save" type="submit" ${isSubmitDisabled ? `disabled` : ``}>save</button>
-            <button class="card__delete" type="button">delete</button>
+            <button class="card__save" type="submit" ${isSubmitDisabled || isDisabled ? `disabled` : ``}>${isSaving ? `saving...` : `save`}</button>
+            <button class="card__delete" type="button" ${isDisabled ? `disabled` : ``}>${isDeleting ? `deleting...` : `delete`}</button>
           </div>
         </div>
       </form>
@@ -313,6 +316,9 @@ export default class TaskEdit extends SmartView {
         {
           isDueDate: task.dueDate !== null,
           isRepeating: isTaskRepeating(task.repeating),
+          isDisabled: false,
+          isSaving: false,
+          isDeleting: false,
         }
     );
   }
@@ -338,6 +344,9 @@ export default class TaskEdit extends SmartView {
 
     delete data.isDueDate;
     delete data.isRepeating;
+    delete data.isDisabled;
+    delete data.isSaving;
+    delete data.isDeleting;
 
     return data;
   }
