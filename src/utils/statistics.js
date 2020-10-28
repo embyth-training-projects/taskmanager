@@ -1,7 +1,6 @@
 import moment from 'moment';
 import {isDatesEqual} from './task';
 import {Color} from '../const';
-import {render} from './render';
 
 export const colorToHex = {
   [Color.BLACK]: `#000000`,
