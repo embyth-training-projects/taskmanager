@@ -7,20 +7,26 @@ import FilterModel from './model/filter';
 import {render, remove, RenderPosition} from './utils/render';
 import {MenuItem, UpdateType, FilterType} from './const';
 import Api from './api/index';
+import Store from './api/store';
+import Provider from './api/provider';
 
-const AUTHORIZATION = `Basic mbpooaj415n1ijbn23_`;
+const AUTHORIZATION = `Basic 1mbpooaj415n1ijbn23_`;
 const END_POINT = `https://12.ecmascript.pages.academy/task-manager`;
+const STORE_PREFIX = `taskmanager-localstorage`;
+const STORE_VER = `v1`;
+const STORE_NAME = `${STORE_PREFIX}-${STORE_VER}`;
 
 const siteMainNode = document.querySelector(`.main`);
 const siteHeaderNode = siteMainNode.querySelector(`.main__control`);
 
 const api = new Api(END_POINT, AUTHORIZATION);
-
+const store = new Store(STORE_NAME, window.localStorage);
+const apiWithProvider = new Provider(api, store);
 const tasksModel = new TasksModel();
 const filterModel = new FilterModel();
 
 const siteMenuComponent = new SiteMenuView();
-const boardPresenter = new BoardPresenter(siteMainNode, filterModel, tasksModel, api);
+const boardPresenter = new BoardPresenter(siteMainNode, filterModel, tasksModel, apiWithProvider);
 const filterPresenter = new FilterPresenter(siteMainNode, filterModel, tasksModel);
 
 const handleTaskNewFormClose = () => {
@@ -56,7 +62,7 @@ const handleSiteMenuClick = (menuItem) => {
 filterPresenter.init();
 boardPresenter.init();
 
-api.getTasks()
+apiWithProvider.getTasks()
   .then((tasks) => {
     tasksModel.setTasks(UpdateType.INIT, tasks);
     render(siteHeaderNode, siteMenuComponent, RenderPosition.BEFOREEND);
@@ -76,4 +82,13 @@ window.addEventListener(`load`, () => {
       .catch(() => {
         console.error(`ServiceWorker isn't available`); // eslint-disable-line
       });
+});
+
+window.addEventListener(`online`, () => {
+  document.title = document.title.replace(` [offline]`, ``);
+  apiWithProvider.sync();
+});
+
+window.addEventListener(`offline`, () => {
+  document.title += ` [offline]`;
 });
