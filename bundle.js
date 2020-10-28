@@ -26511,6 +26511,152 @@ webpackEmptyContext.id = "./node_modules/moment/locale sync recursive \\b\\B";
 
 /***/ }),
 
+/***/ "./node_modules/nanoid/index.browser.js":
+/*!**********************************************!*\
+  !*** ./node_modules/nanoid/index.browser.js ***!
+  \**********************************************/
+/*! exports provided: nanoid, customAlphabet, customRandom, urlAlphabet, random */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "nanoid", function() { return nanoid; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "customAlphabet", function() { return customAlphabet; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "customRandom", function() { return customRandom; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "random", function() { return random; });
+/* harmony import */ var _url_alphabet_index_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./url-alphabet/index.js */ "./node_modules/nanoid/url-alphabet/index.js");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "urlAlphabet", function() { return _url_alphabet_index_js__WEBPACK_IMPORTED_MODULE_0__["urlAlphabet"]; });
+
+// This file replaces `index.js` in bundlers like webpack or Rollup,
+// according to `browser` config in `package.json`.
+
+
+
+if (true) {
+  // All bundlers will remove this block in the production bundle.
+  if (
+    typeof navigator !== 'undefined' &&
+    navigator.product === 'ReactNative' &&
+    typeof crypto === 'undefined'
+  ) {
+    throw new Error(
+      'React Native does not have a built-in secure random generator. ' +
+        'If you don’t need unpredictable IDs use `nanoid/non-secure`. ' +
+        'For secure IDs, import `react-native-get-random-values` ' +
+        'before Nano ID. If you use Expo, install `expo-random` ' +
+        'and use `nanoid/async`.'
+    )
+  }
+  if (typeof msCrypto !== 'undefined' && typeof crypto === 'undefined') {
+    throw new Error(
+      'Import file with `if (!window.crypto) window.crypto = window.msCrypto`' +
+        ' before importing Nano ID to fix IE 11 support'
+    )
+  }
+  if (typeof crypto === 'undefined') {
+    throw new Error(
+      'Your browser does not have secure random generator. ' +
+        'If you don’t need unpredictable IDs, you can use nanoid/non-secure.'
+    )
+  }
+}
+
+let random = bytes => crypto.getRandomValues(new Uint8Array(bytes))
+
+let customRandom = (alphabet, size, getRandom) => {
+  // First, a bitmask is necessary to generate the ID. The bitmask makes bytes
+  // values closer to the alphabet size. The bitmask calculates the closest
+  // `2^31 - 1` number, which exceeds the alphabet size.
+  // For example, the bitmask for the alphabet size 30 is 31 (00011111).
+  // `Math.clz32` is not used, because it is not available in browsers.
+  let mask = (2 << (Math.log(alphabet.length - 1) / Math.LN2)) - 1
+  // Though, the bitmask solution is not perfect since the bytes exceeding
+  // the alphabet size are refused. Therefore, to reliably generate the ID,
+  // the random bytes redundancy has to be satisfied.
+
+  // Note: every hardware random generator call is performance expensive,
+  // because the system call for entropy collection takes a lot of time.
+  // So, to avoid additional system calls, extra bytes are requested in advance.
+
+  // Next, a step determines how many random bytes to generate.
+  // The number of random bytes gets decided upon the ID size, mask,
+  // alphabet size, and magic number 1.6 (using 1.6 peaks at performance
+  // according to benchmarks).
+
+  // `-~f => Math.ceil(f)` if f is a float
+  // `-~i => i + 1` if i is an integer
+  let step = -~((1.6 * mask * size) / alphabet.length)
+
+  return () => {
+    let id = ''
+    while (true) {
+      let bytes = getRandom(step)
+      // A compact alternative for `for (var i = 0; i < step; i++)`.
+      let j = step
+      while (j--) {
+        // Adding `|| ''` refuses a random byte that exceeds the alphabet size.
+        id += alphabet[bytes[j] & mask] || ''
+        // `id.length + 1 === size` is a more compact option.
+        if (id.length === +size) return id
+      }
+    }
+  }
+}
+
+let customAlphabet = (alphabet, size) => customRandom(alphabet, size, random)
+
+let nanoid = (size = 21) => {
+  let id = ''
+  let bytes = crypto.getRandomValues(new Uint8Array(size))
+
+  // A compact alternative for `for (var i = 0; i < step; i++)`.
+  while (size--) {
+    // It is incorrect to use bytes exceeding the alphabet size.
+    // The following mask reduces the random byte in the 0-255 value
+    // range to the 0-63 value range. Therefore, adding hacks, such
+    // as empty string fallback or magic numbers, is unneccessary because
+    // the bitmask trims bytes down to the alphabet size.
+    let byte = bytes[size] & 63
+    if (byte < 36) {
+      // `0-9a-z`
+      id += byte.toString(36)
+    } else if (byte < 62) {
+      // `A-Z`
+      id += (byte - 26).toString(36).toUpperCase()
+    } else if (byte < 63) {
+      id += '_'
+    } else {
+      id += '-'
+    }
+  }
+  return id
+}
+
+
+
+
+/***/ }),
+
+/***/ "./node_modules/nanoid/url-alphabet/index.js":
+/*!***************************************************!*\
+  !*** ./node_modules/nanoid/url-alphabet/index.js ***!
+  \***************************************************/
+/*! exports provided: urlAlphabet */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "urlAlphabet", function() { return urlAlphabet; });
+// This alphabet uses `A-Za-z0-9_-` symbols. The genetic algorithm helped
+// optimize the gzip compression for this alphabet.
+let urlAlphabet =
+  'ModuleSymbhasOwnPr-0123456789ABCDEFGHNRVfgctiUvz_KqYTJkLxpZXIjQW'
+
+
+
+
+/***/ }),
+
 /***/ "./node_modules/style-loader/dist/runtime/injectStylesIntoStyleTag.js":
 /*!****************************************************************************!*\
   !*** ./node_modules/style-loader/dist/runtime/injectStylesIntoStyleTag.js ***!
@@ -26855,17 +27001,17 @@ module.exports = function(module) {
 
 /***/ }),
 
-/***/ "./src/api.js":
-/*!********************!*\
-  !*** ./src/api.js ***!
-  \********************/
+/***/ "./src/api/index.js":
+/*!**************************!*\
+  !*** ./src/api/index.js ***!
+  \**************************/
 /*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return Api; });
-/* harmony import */ var _model_tasks__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./model/tasks */ "./src/model/tasks.js");
+/* harmony import */ var _model_tasks__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../model/tasks */ "./src/model/tasks.js");
 
 
 const Method = {
@@ -26921,6 +27067,16 @@ class Api {
     });
   }
 
+  sync(data) {
+    return this._load({
+      url: `tasks/sync`,
+      method: Method.POST,
+      body: JSON.stringify(data),
+      headers: new Headers({"Content-Type": `application/json`})
+    })
+      .then(Api.toJSON);
+  }
+
   _load({
     url,
     method = Method.GET,
@@ -26954,6 +27110,177 @@ class Api {
 
   static catchError(error) {
     throw error;
+  }
+}
+
+
+/***/ }),
+
+/***/ "./src/api/provider.js":
+/*!*****************************!*\
+  !*** ./src/api/provider.js ***!
+  \*****************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return Provider; });
+/* harmony import */ var nanoid__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! nanoid */ "./node_modules/nanoid/index.browser.js");
+/* harmony import */ var _model_tasks__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../model/tasks */ "./src/model/tasks.js");
+
+
+
+const getSyncedTasks = (items) => {
+  return items.filter(({success}) => success)
+    .map(({payload}) => payload.task);
+};
+
+const createStoreStructure = (items) => {
+  return items.reduce((acc, current) => {
+    return Object.assign({}, acc, {
+      [current.id]: current,
+    });
+  }, {});
+};
+
+class Provider {
+  constructor(api, store) {
+    this._api = api;
+    this._store = store;
+  }
+
+  getTasks() {
+    if (Provider.isOnline()) {
+      return this._api.getTasks()
+        .then((tasks) => {
+          const items = createStoreStructure(tasks.map(_model_tasks__WEBPACK_IMPORTED_MODULE_1__["default"].adaptToServer));
+          this._store.setItems(items);
+          return tasks;
+        });
+    }
+
+    const storeTasks = Object.values(this._store.getItems());
+    return Promise.resolve(storeTasks.map(_model_tasks__WEBPACK_IMPORTED_MODULE_1__["default"].adaptToClient));
+  }
+
+  updateTask(task) {
+    if (Provider.isOnline()) {
+      return this._api.updateTask(task)
+        .then((updatedTask) => {
+          this._store.setItem(updatedTask.id, _model_tasks__WEBPACK_IMPORTED_MODULE_1__["default"].adaptToServer(updatedTask));
+          return updatedTask;
+        });
+    }
+
+    this._store.setItem(task.id, _model_tasks__WEBPACK_IMPORTED_MODULE_1__["default"].adaptToServer(Object.assign({}, task)));
+    return Promise.resolve(task);
+  }
+
+  addTask(task) {
+    if (Provider.isOnline()) {
+      return this._api.addTask(task)
+        .then((newTask) => {
+          this._store.setItem(newTask.id, _model_tasks__WEBPACK_IMPORTED_MODULE_1__["default"].adaptToServer(newTask));
+          return newTask;
+        });
+    }
+
+    const localNewTaskId = Object(nanoid__WEBPACK_IMPORTED_MODULE_0__["nanoid"])();
+    const localNewTask = Object.assign({}, task, {id: localNewTaskId});
+
+    this._store.setItem(localNewTask.id, _model_tasks__WEBPACK_IMPORTED_MODULE_1__["default"].adaptToServer(localNewTask));
+    return Promise.resolve(localNewTask);
+  }
+
+  deleteTask(task) {
+    if (Provider.isOnline()) {
+      return this._api.deleteTask(task)
+        .then(() => this._store.removeItem(task.id));
+    }
+
+    this._store.removeItem(task.id);
+    return Promise.resolve();
+  }
+
+  sync() {
+    if (Provider.isOnline()) {
+      const storeTasks = Object.values(this._store.getItems());
+
+      return this._api.sync(storeTasks)
+        .then((response) => {
+          const createdTasks = getSyncedTasks(response.created);
+          const updatedTasks = getSyncedTasks(response.updated);
+
+          const items = createStoreStructure([...createdTasks, ...updatedTasks]);
+          this._store.setItems(items);
+        });
+    }
+
+    return Promise.reject(new Error(`Sync data failed`));
+  }
+
+  static isOnline() {
+    return window.navigator.onLine;
+  }
+}
+
+
+/***/ }),
+
+/***/ "./src/api/store.js":
+/*!**************************!*\
+  !*** ./src/api/store.js ***!
+  \**************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return Store; });
+class Store {
+  constructor(key, storage) {
+    this._storage = storage;
+    this._storeKey = key;
+  }
+
+  getItems() {
+    try {
+      return JSON.parse(this._storage.getItem(this._storeKey)) || {};
+    } catch (error) {
+      return {};
+    }
+  }
+
+  setItems(items) {
+    this._storage.setItem(
+        this._storeKey,
+        JSON.stringify(items)
+    );
+  }
+
+  setItem(key, value) {
+    const store = this.getItems();
+
+    this._storage.setItem(
+        this._storeKey,
+        JSON.stringify(
+            Object.assign({}, store, {
+              [key]: value
+            })
+        )
+    );
+  }
+
+  removeItem(key) {
+    const store = this.getItems();
+
+    delete store[key];
+
+    this._storage.setItem(
+        this._storeKey,
+        JSON.stringify(store)
+    );
   }
 }
 
@@ -27040,7 +27367,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _model_filter__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./model/filter */ "./src/model/filter.js");
 /* harmony import */ var _utils_render__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./utils/render */ "./src/utils/render.js");
 /* harmony import */ var _const__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./const */ "./src/const.js");
-/* harmony import */ var _api__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./api */ "./src/api.js");
+/* harmony import */ var _api_index__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./api/index */ "./src/api/index.js");
+/* harmony import */ var _api_store__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./api/store */ "./src/api/store.js");
+/* harmony import */ var _api_provider__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ./api/provider */ "./src/api/provider.js");
 
 
 
@@ -27051,19 +27380,25 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
-const AUTHORIZATION = `Basic mbpooaj415n1ijbn23_`;
+
+
+const AUTHORIZATION = `Basic 1mbpooaj415n1ijbn23_`;
 const END_POINT = `https://12.ecmascript.pages.academy/task-manager`;
+const STORE_PREFIX = `taskmanager-localstorage`;
+const STORE_VER = `v1`;
+const STORE_NAME = `${STORE_PREFIX}-${STORE_VER}`;
 
 const siteMainNode = document.querySelector(`.main`);
 const siteHeaderNode = siteMainNode.querySelector(`.main__control`);
 
-const api = new _api__WEBPACK_IMPORTED_MODULE_8__["default"](END_POINT, AUTHORIZATION);
-
+const api = new _api_index__WEBPACK_IMPORTED_MODULE_8__["default"](END_POINT, AUTHORIZATION);
+const store = new _api_store__WEBPACK_IMPORTED_MODULE_9__["default"](STORE_NAME, window.localStorage);
+const apiWithProvider = new _api_provider__WEBPACK_IMPORTED_MODULE_10__["default"](api, store);
 const tasksModel = new _model_tasks__WEBPACK_IMPORTED_MODULE_4__["default"]();
 const filterModel = new _model_filter__WEBPACK_IMPORTED_MODULE_5__["default"]();
 
 const siteMenuComponent = new _view_site_menu__WEBPACK_IMPORTED_MODULE_0__["default"]();
-const boardPresenter = new _presenter_board__WEBPACK_IMPORTED_MODULE_3__["default"](siteMainNode, filterModel, tasksModel, api);
+const boardPresenter = new _presenter_board__WEBPACK_IMPORTED_MODULE_3__["default"](siteMainNode, filterModel, tasksModel, apiWithProvider);
 const filterPresenter = new _presenter_filter__WEBPACK_IMPORTED_MODULE_2__["default"](siteMainNode, filterModel, tasksModel);
 
 const handleTaskNewFormClose = () => {
@@ -27099,7 +27434,7 @@ const handleSiteMenuClick = (menuItem) => {
 filterPresenter.init();
 boardPresenter.init();
 
-api.getTasks()
+apiWithProvider.getTasks()
   .then((tasks) => {
     tasksModel.setTasks(_const__WEBPACK_IMPORTED_MODULE_7__["UpdateType"].INIT, tasks);
     Object(_utils_render__WEBPACK_IMPORTED_MODULE_6__["render"])(siteHeaderNode, siteMenuComponent, _utils_render__WEBPACK_IMPORTED_MODULE_6__["RenderPosition"].BEFOREEND);
@@ -27110,6 +27445,25 @@ api.getTasks()
     Object(_utils_render__WEBPACK_IMPORTED_MODULE_6__["render"])(siteHeaderNode, siteMenuComponent, _utils_render__WEBPACK_IMPORTED_MODULE_6__["RenderPosition"].BEFOREEND);
     siteMenuComponent.setMenuClickHandler(handleSiteMenuClick);
   });
+
+window.addEventListener(`load`, () => {
+  navigator.serviceWorker.register(`/sw.js`)
+      .then(() => {
+        console.log(`ServiceWorker available`); // eslint-disable-line
+      })
+      .catch(() => {
+        console.error(`ServiceWorker isn't available`); // eslint-disable-line
+      });
+});
+
+window.addEventListener(`online`, () => {
+  document.title = document.title.replace(` [offline]`, ``);
+  apiWithProvider.sync();
+});
+
+window.addEventListener(`offline`, () => {
+  document.title += ` [offline]`;
+});
 
 
 /***/ }),
